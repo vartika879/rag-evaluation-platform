@@ -1,7 +1,7 @@
 from app.embeddings.service import create_embedding_model
 from app.vectorstore.qdrant_store import COLLECTION_NAME,create_qdrant_client
 
-def retrieve_chunks(query:str,top_k:int=5):
+def retrieve_chunks(query:str,top_k:int=5, collection_name=COLLECTION_NAME):
     embedding_model=create_embedding_model()
     query_vector=embedding_model.embed_query(query)
 
@@ -9,7 +9,7 @@ def retrieve_chunks(query:str,top_k:int=5):
 
     try:
         results = client.query_points(
-            collection_name=COLLECTION_NAME,
+            collection_name=collection_name,
             query=query_vector,
             limit=top_k,
             with_payload=True,

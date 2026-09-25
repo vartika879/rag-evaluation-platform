@@ -10,14 +10,14 @@ def create_qdrant_client():
 
     return client
 
-def create_collection(client):
+def create_collection(client, collection_name=COLLECTION_NAME):
     collections=client.get_collections().collections
 
     existing_names=[collection.name for collection in collections]
 
-    if COLLECTION_NAME not in existing_names:
+    if collection_name not in existing_names:
         client.create_collection(
-            collection_name= COLLECTION_NAME,
+            collection_name= collection_name,
             vectors_config=VectorParams(
                 size=VECTOR_SIZE,
                 distance=Distance.COSINE,
@@ -29,7 +29,7 @@ def create_collection(client):
         print(f"Collection '{COLLECTION_NAME}' already exists.")
 
 
-def store_chunks(client,chunks,embeddings):
+def store_chunks(client,chunks,embeddings,collection_name=COLLECTION_NAME):
     points=[]
 
     for index,(chunk,embedding) in enumerate(
@@ -41,14 +41,16 @@ def store_chunks(client,chunks,embeddings):
             payload={
                 "text":chunk.page_content,
                 "source":chunk.metadata.get("source"),
-                "page":chunk.metadata.get("page")
+                "page":chunk.metadata.get("page"),
+                "section": chunk.metadata.get("section")
             },
         )
         points.append(point)
 
     client.upsert(
-        collection_name=COLLECTION_NAME,
+        collection_name=collection_name,
         points=points
     )
     print(f"Stored {len(points)} points in Qdrant.")
+    print(f"Collection '{collection_name}' created.")
 

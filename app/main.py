@@ -203,10 +203,10 @@ for i, result in enumerate(results,start=1):
     print(result.payload.get("text")[:1000])
     """
 
+"""
 
-
-from app.retrieval.retriever import retrieve_chunks, build_context,build_sources
-from app.generation.llm import create_llm,generate_answer
+from app0.retrieval.retriever import retrieve_chunks, build_context,build_sources
+from app0.generation.llm import create_llm,generate_answer
 #query="What is Retrieval-Augmented Generation?"
 #query = "Who is the current Prime Minister of India?"
 #query="What are the main challenges of Retrieval-Augmented Generation?"
@@ -259,3 +259,274 @@ else:
             f"Page {source['page']} | "
             f"Score: {source['score']:.3f}"
         )
+
+        """
+
+"""
+from app.ingestion.loader import load_pdf
+
+
+from app.ingestion.chunker import (
+    create_recursive_chunks,
+    create_fixed_chunks,
+)
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+recursive_chunks = create_recursive_chunks(documents)
+fixed_chunks = create_fixed_chunks(documents)
+
+print("Documents:", len(documents))
+print("Recursive chunks:", len(recursive_chunks))
+print("Fixed chunks:", len(fixed_chunks))
+
+print("\n========== FIXED CHUNK SAMPLE ==========")
+
+for i, chunk in enumerate(fixed_chunks[:3], start=1):
+    print(f"\n--- Chunk {i} ---")
+    print("Length:", len(chunk.page_content))
+    print("Page:", chunk.metadata.get("page"))
+    print("Text:")
+    print(chunk.page_content[:500])
+
+
+"""
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_fixed_chunks
+from app.embeddings.service import embed_chunks
+from app.vectorstore.qdrant_store import (
+    create_qdrant_client,
+    create_collection,
+    store_chunks,
+)
+from app.retrieval.retriever import retrieve_chunks
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+fixed_chunks = create_fixed_chunks(documents)
+
+print("Fixed chunks:", len(fixed_chunks))
+
+embeddings = embed_chunks(fixed_chunks)
+
+client = create_qdrant_client()
+
+try:
+    create_collection(client, "rag_fixed")
+
+    store_chunks(
+        client,
+        fixed_chunks,
+        embeddings,
+        collection_name="rag_fixed",
+    )
+finally:
+    client.close()
+
+query = "Who is the current Prime Minister of India?"
+
+results = retrieve_chunks(
+    query=query,
+    top_k=5,
+    collection_name="rag_fixed",
+)
+
+print(f"Retrieved chunks: {len(results)}")
+
+for i, result in enumerate(results, start=1):
+    print(f"\n========== RESULT {i} ==========")
+    print(f"Score: {result.score:.4f}")
+    print(f"Page: {result.payload.get('page') + 1}")
+    print("Text:")
+    print(result.payload.get("text", ""))
+
+ """   
+"""
+from app.retrieval.retriever import retrieve_chunks, build_context,build_sources
+from app.generation.llm import create_llm,generate_answer
+query="Who is the current Prime Minister of India?"
+#query = "Who is the current Prime Minister of India?"
+#query="What are the main challenges of Retrieval-Augmented Generation?"
+
+results=retrieve_chunks(
+    query=query,
+    top_k=5,
+)
+
+print(f"Retrieved chunks: {len(results)}")
+
+for i, result in enumerate(results, start=1):
+    print(f"\n========== RESULT {i} ==========")
+    print(f"Score: {result.score:.4f}")
+    print(f"Page: {result.payload.get('page') + 1}")
+    print("Text:")
+    print(result.payload.get("text", ""))
+
+  """
+"""
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_semantic_chunks
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+test_documents = documents[:5]
+
+semantic_chunks = create_semantic_chunks(test_documents)
+
+print("Documents:", len(test_documents))
+print("Semantic chunks:", len(semantic_chunks))
+
+print("\n========== SEMANTIC CHUNK SAMPLE ==========")
+
+for i, chunk in enumerate(semantic_chunks, start=1):
+    print(f"\n--- Chunk {i} ---")
+    print("Length:", len(chunk.page_content))
+    print("Page:", chunk.metadata.get("page"))
+    print("Text:")
+    print(chunk.page_content)
+
+    """
+"""
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_semantic_chunks
+from app.embeddings.service import embed_chunks
+from app.vectorstore.qdrant_store import (
+    create_qdrant_client,
+    create_collection,
+    store_chunks,
+)
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+test_documents = documents[:5]
+
+semantic_chunks = create_semantic_chunks(test_documents)
+
+print("Documents:", len(test_documents))
+print("Semantic chunks:", len(semantic_chunks))
+
+embeddings = embed_chunks(semantic_chunks)
+
+client = create_qdrant_client()
+
+try:
+    create_collection(client, "rag_semantic_test")
+
+    store_chunks(
+        client,
+        semantic_chunks,
+        embeddings,
+        collection_name="rag_semantic_test",
+    )
+finally:
+    client.close()"""
+
+
+
+"""
+from app.retrieval.retriever import retrieve_chunks
+
+query = "What are the main challenges of Retrieval-Augmented Generation?"
+results = retrieve_chunks(
+    query=query,
+    top_k=5,
+    collection_name="rag_semantic_test",
+)
+
+print("\n========== SEMANTIC RETRIEVAL ==========")
+
+for i, result in enumerate(results, start=1):
+    print(f"\n--- Result {i} ---")
+    print("Score:", result.score)
+    print("Page:", result.payload.get("page"))
+    print("Length:", len(result.payload.get("text", "")))
+    print("Text:")
+    print(result.payload.get("text", ""))
+"""
+
+
+"""
+from app.ingestion.loader import load_pdf
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+for i, document in enumerate(documents[:10]):
+    print(f"\n========== PAGE {i + 1} ==========")
+    print(document.page_content[:3000])
+    """
+
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_structure_aware_chunks
+from app.embeddings.service import embed_chunks
+from app.vectorstore.qdrant_store import (
+    create_qdrant_client,
+    create_collection,
+    store_chunks,
+)
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+chunks = create_structure_aware_chunks(documents)
+
+print("Structure-aware chunks:", len(chunks))
+
+for i, chunk in enumerate(chunks[:10]):
+    print(f"\n========== CHUNK {i + 1} ==========")
+    print("Length:", len(chunk.page_content))
+    print("Page:", chunk.metadata.get("page"))
+    print("Section:", chunk.metadata.get("section"))
+    print("Text:")
+    print(chunk.page_content[:1000])
+embeddings = embed_chunks(chunks)
+
+client = create_qdrant_client()
+
+try:
+    create_collection(client, "rag_structure_aware")
+
+    store_chunks(
+        client,
+        chunks,
+        embeddings,
+        collection_name="rag_structure_aware",
+    )
+finally:
+    client.close()
+    """ """
+
+from app.vectorstore.qdrant_store import create_qdrant_client
+
+client = create_qdrant_client()
+
+try:
+    collections = client.get_collections().collections
+
+    print("\n========== QDRANT COLLECTIONS ==========")
+    for collection in collections:
+        print("-", collection.name)
+finally:
+    client.close()
+
+"""
+
+
+from app.retrieval.retriever import retrieve_chunks
+
+query = "What are the main challenges of Retrieval-Augmented Generation?"
+results = retrieve_chunks(
+    query=query,
+    top_k=5,
+    collection_name="rag_structure_aware",
+)
+
+print("\n========== STRUCTURE-AWARE RETRIEVAL ==========")
+print(f"Query: {query}")
+
+for i, result in enumerate(results, start=1):
+    print(f"\n--- Result {i} ---")
+    print(f"Score: {result.score}")
+    print(f"Page: {result.payload.get('page')}")
+    print(f"Section: {result.payload.get('section')}")
+    print(f"Length: {len(result.payload.get('text', ''))}")
+    print(f"Text:\n{result.payload.get('text', '')[:500]}")
