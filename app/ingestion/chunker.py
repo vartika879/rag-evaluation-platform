@@ -11,10 +11,16 @@ def create_recursive_chunks(documents):
         chunk_overlap=150,
        
     )
+    chunks = splitter.split_documents(documents)
+
+    for index, chunk in enumerate(chunks):
+        chunk.metadata["chunk_id"] = index
+
+    return chunks
 
     
 
-    return splitter.split_documents(documents=documents)
+   
 
 
 def create_fixed_chunks(documents,chunk_size=1000,chunk_overlap=150):

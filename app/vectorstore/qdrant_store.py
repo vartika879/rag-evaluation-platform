@@ -36,13 +36,14 @@ def store_chunks(client,chunks,embeddings,collection_name=COLLECTION_NAME):
         zip(chunks,embeddings)
     ):
         point=PointStruct(
-            id=index,
+            id=chunk.metadata["chunk_id"],
             vector=embedding,
             payload={
                 "text":chunk.page_content,
                 "source":chunk.metadata.get("source"),
                 "page":chunk.metadata.get("page"),
-                "section": chunk.metadata.get("section")
+                "section": chunk.metadata.get("section"),
+                "chunk_id": chunk.metadata["chunk_id"],
             },
         )
         points.append(point)
@@ -52,5 +53,4 @@ def store_chunks(client,chunks,embeddings,collection_name=COLLECTION_NAME):
         points=points
     )
     print(f"Stored {len(points)} points in Qdrant.")
-    print(f"Collection '{collection_name}' created.")
-
+   

@@ -510,10 +510,11 @@ finally:
 
 """
 
-
+"""
 from app.retrieval.retriever import retrieve_chunks
 
-query = "What are the main challenges of Retrieval-Augmented Generation?"
+query = "Who is the current Prime Minister of India?ohk" \
+""
 results = retrieve_chunks(
     query=query,
     top_k=5,
@@ -530,3 +531,266 @@ for i, result in enumerate(results, start=1):
     print(f"Section: {result.payload.get('section')}")
     print(f"Length: {len(result.payload.get('text', ''))}")
     print(f"Text:\n{result.payload.get('text', '')[:500]}")
+
+
+    """
+
+
+
+
+
+
+
+
+
+
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks
+from app.retrieval.bm25 import create_bm25_index, retrieve_bm25
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+chunks = create_recursive_chunks(documents)
+
+bm25 = create_bm25_index(chunks)
+
+query = "What are the main challenges of Retrieval-Augmented Generation?"
+
+results = retrieve_bm25(
+    bm25=bm25,
+    chunks=chunks,
+    query=query,
+    top_k=5,
+)
+
+print("\n========== BM25 RETRIEVAL ==========")
+print("Query:", query)
+
+for i, result in enumerate(results, start=1):
+    chunk = result["chunk"]
+
+    print(f"\n--- Result {i} ---")
+    print("BM25 Score:", result["score"])
+    print("Page:", chunk.metadata.get("page"))
+    print("Length:", len(chunk.page_content))
+    print("Text:")
+    print(chunk.page_content[:1000])
+
+    """
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks
+from app.embeddings.service import embed_chunks
+from app.vectorstore.qdrant_store import (
+    create_qdrant_client,
+    create_collection,
+    store_chunks,
+    COLLECTION_NAME,
+)
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+
+chunks = create_recursive_chunks(documents)
+
+print("Recursive chunks:", len(chunks))
+
+embeddings = embed_chunks(chunks)
+
+client = create_qdrant_client()
+
+try:
+    # Delete old collection
+    collections = client.get_collections().collections
+    existing_names = [collection.name for collection in collections]
+
+    if COLLECTION_NAME in existing_names:
+        client.delete_collection(COLLECTION_NAME)
+        print(f"Deleted old collection: {COLLECTION_NAME}")
+
+    # Create clean collection
+    create_collection(client, COLLECTION_NAME)
+
+    # Store fresh recursive chunks
+    store_chunks(
+        client,
+        chunks,
+        embeddings,
+        collection_name=COLLECTION_NAME,
+    )
+
+finally:
+    client.close()
+
+
+    """
+
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks,create_embedding_model
+from app.embeddings.service import embed_chunks
+from app.vectorstore.qdrant_store import (
+    create_qdrant_client,
+    COLLECTION_NAME,
+)
+from app.retrieval.retriever import retrieve_chunks,retrieve_with_query_vector
+from app.retrieval.bm25 import create_bm25_index, retrieve_bm25
+from app.retrieval.hybrid import hybrid_search
+
+
+# -----------------------------
+# Load + chunk
+# -----------------------------
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+chunks = create_recursive_chunks(documents)
+
+print("Recursive chunks:", len(chunks))
+
+
+# -----------------------------
+# Create BM25 index
+# -----------------------------
+
+bm25 = create_bm25_index(chunks)
+
+
+# -----------------------------
+# Query
+# -----------------------------
+query = "What is Retrieval-Augmented Generation?"
+
+# -----------------------------
+# Vector Search
+# -----------------------------
+
+vector_results = retrieve_chunks(
+    query=query,
+    top_k=2,
+    collection_name=COLLECTION_NAME,
+)
+
+print("\n========== VECTOR SEARCH ==========")
+print("Query:", query)
+
+for i, result in enumerate(vector_results, start=1):
+    print(f"\n--- Result {i} ---")
+    print("Chunk ID:", result.payload.get("chunk_id"))
+    print("Vector Score:", result.score)
+    print("Page:", result.payload.get("page"))
+    print("Text:")
+    print(result.payload.get("text", "")[:500])
+
+
+# -----------------------------
+# BM25 Search
+# -----------------------------
+
+bm25_results = retrieve_bm25(
+    bm25=bm25,
+    chunks=chunks,
+    query=query,
+    top_k=5,
+)
+
+print("\n========== BM25 SEARCH ==========")
+print("Query:", query)
+
+for i, result in enumerate(bm25_results, start=1):
+    chunk = result["chunk"]
+
+    print(f"\n--- Result {i} ---")
+    print("Chunk ID:", result["chunk_id"])
+    print("BM25 Score:", result["score"])
+    print("Page:", chunk.metadata.get("page"))
+    print("Text:")
+    print(chunk.page_content[:500])
+
+
+# -----------------------------
+# Hybrid Search
+# -----------------------------
+
+hybrid_results = hybrid_search(
+    vector_results=vector_results,
+    bm25_results=bm25_results,
+    top_k=5,
+    vector_weight=0.5,
+)
+
+print("\n========== HYBRID SEARCH ==========")
+print("Query:", query)
+
+for i, result in enumerate(hybrid_results, start=1):
+    print(f"\n--- Result {i} ---")
+    print("Chunk ID:", result["chunk_id"])
+    print("Vector Normalized:", result["vector_score"])
+    print("BM25 Normalized:", result["bm25_score"])
+    print("Hybrid Score:", result["hybrid_score"])
+
+
+
+
+
+query = "What is Retrieval-Augmented Generation?"
+
+embedding_model = create_embedding_model()
+
+# Only ONE Cohere API call
+query_vector = embedding_model.embed_query(query)
+
+print("\n========== TOP-K EXPERIMENT ==========")
+
+for k in [1, 3, 5, 10]:
+    results = retrieve_with_query_vector(
+        query_vector=query_vector,
+        top_k=k,
+        collection_name=COLLECTION_NAME,
+    )
+
+    print(f"\n===== TOP-K = {k} =====")
+
+    for i, result in enumerate(results, start=1):
+        print(
+            f"{i}. "
+            f"Chunk ID: {result.payload.get('chunk_id')} | "
+            f"Page: {result.payload.get('page')} | "
+            f"Score: {result.score:.4f}"
+        )
+
+
+        """
+
+from app.embeddings.service import create_embedding_model
+from app.retrieval.retriever import retrieve_with_query_vector
+from app.vectorstore.qdrant_store import COLLECTION_NAME
+
+query = "What is Retrieval-Augmented Generation?"
+
+embedding_model = create_embedding_model()
+
+# ONE Cohere API call
+query_vector = embedding_model.embed_query(query)
+
+print("\n========== TOP-K EXPERIMENT ==========")
+print("Query:", query)
+
+for k in [1, 3, 5, 10]:
+    results = retrieve_with_query_vector(
+        query_vector=query_vector,
+        top_k=k,
+        collection_name=COLLECTION_NAME,
+    )
+
+    print(f"\n===== TOP-K = {k} =====")
+
+    for i, result in enumerate(results, start=1):
+        print(
+            f"{i}. "
+            f"Chunk ID: {result.payload.get('chunk_id')} | "
+            f"Page: {result.payload.get('page')} | "
+            f"Score: {result.score:.4f}"
+        )
