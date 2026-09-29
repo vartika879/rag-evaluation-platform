@@ -46,20 +46,21 @@ def create_fixed_chunks(documents,chunk_size=1000,chunk_overlap=150):
 
     return chunks
 
-
 def create_semantic_chunks(documents):
-    embedding_model=create_embedding_model()
+    embedding_model = create_embedding_model()
 
-    splitter=SemanticChunker(
+    splitter = SemanticChunker(
         embedding_model,
         breakpoint_threshold_type="percentile",
         breakpoint_threshold_amount=95
     )
-    return splitter.split_documents(documents)
 
+    chunks = splitter.split_documents(documents)
 
+    for index, chunk in enumerate(chunks):
+        chunk.metadata["chunk_id"] = index
 
-
+    return chunks
 
 
 
