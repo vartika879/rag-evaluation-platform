@@ -29,6 +29,7 @@ async def ask_question(request: AskRequest):
             status_code=422,
             detail="Question cannot be empty.",
         )
+    logger.info("Received RAG request; top_k=%s", request.top_k)
 
     try:
         return await run_in_threadpool(
