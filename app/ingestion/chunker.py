@@ -1,22 +1,51 @@
+import re
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
 from langchain_experimental.text_splitter import SemanticChunker
 from app.embeddings.service import create_embedding_model
 
-def create_recursive_chunks(documents):
+HEADING_PATTERN = re.compile(
+    r"^\d{1,2}(?:\.\d{1,2}){0,3}\s+[A-Z][^\n]{2,90}$"
+)
 
-    splitter=RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=150,
-       
-    )
-    chunks = splitter.split_documents(documents)
+def _validate(chunk_size,chunk_overlap):
+    if chunk_size <= 0:
+        raise ValueError("chunk_size must be greater than 0.")
 
-    for index, chunk in enumerate(chunks):
+    if not 0 <= chunk_overlap < chunk_size:
+        raise ValueError(
+            "chunk_overlap must be >= 0 and smaller than chunk_size."
+
+        )
+def _finalize(chunks,strategy):
+    chunks=[
+        chunk for chunk in chunks
+        if chunk.page_content.strip()
+    ]   
+    for index,chunk in enumerate(chunks):
+        doc_id=chunk.metadata.get("doc_id","doc")
+
         chunk.metadata["chunk_id"] = index
+        chunk.metadata["chunk_uid"] = f"{doc_id}:{strategy}:{index}"
+        chunk.metadata["chunk_strategy"] = strategy
 
     return chunks
+
+
+def create_recursive_chunks(
+        documents,
+        chunk_size=1000,
+        chunk_overlap=150
+        ):
+
+    splitter=RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        add_start_index = True,
+    )
+    return _finalize(splitter.split_documents(documents), "recursive")
+
 
     
 
@@ -24,6 +53,9 @@ def create_recursive_chunks(documents):
 
 
 def create_fixed_chunks(documents,chunk_size=1000,chunk_overlap=150):
+
+    _validate(chunk_size,chunk_overlap)
+    step = chunk_size - chunk_overlap
     chunks=[]
 
     for document in documents:
@@ -31,121 +63,122 @@ def create_fixed_chunks(documents,chunk_size=1000,chunk_overlap=150):
         start=0
 
         while start < len(text):
-            end=start + chunk_size
-            chunk_text=text[start:end]
+            end = start + chunk_size
+            piece =text[start:end]
 
-            if chunk_text.strip():
+            if piece.strip():
+                metadata = document.metadata.copy()
+                metadata["start_index"] = start
+
                 chunks.append(
                     Document(
-                        page_content=chunk_text,
-                        metadata=document.metadata.copy(),
+                        page_content = piece,
+                        metadata=metadata,
                     )
                 )
+            if end >= len(text):
+                break
 
-            start += chunk_size - chunk_overlap
+            start += step
+    return _finalize(chunks,"fixed")
 
-    return chunks
 
-def create_semantic_chunks(documents):
+
+
+def create_semantic_chunks(
+        documents,
+        breakpoint_threshold_type="percentile",
+        breakpoint_threshold_amount=95):
     embedding_model = create_embedding_model()
 
     splitter = SemanticChunker(
         embedding_model,
-        breakpoint_threshold_type="percentile",
-        breakpoint_threshold_amount=95
+        breakpoint_threshold_type=breakpoint_threshold_type,
+        breakpoint_threshold_amount=breakpoint_threshold_amount
     )
 
-    chunks = splitter.split_documents(documents)
-
-    for index, chunk in enumerate(chunks):
-        chunk.metadata["chunk_id"] = index
-
-    return chunks
+    return _finalize(splitter.split_documents(documents), "semantic")
 
 
 
-import re
-
-from langchain_core.documents import Document
-
+def _is_heading(line):
+    return bool(HEADING_PATTERN.match(line)) and not line.endswith(
+        (".", ",", ";", ":")
+    )
 
 def create_structure_aware_chunks(
     documents,
     chunk_size=1500,
     chunk_overlap=150,
+    min_section_chars=80
 ):
-    chunks = []
-
-    # Matches headings such as:
-    # 1 Introduction
-    # 3 Retriever
-    # 3.1 Building the Retriever
-    # 3.1.1 Chunking Corpus
-    heading_pattern = re.compile(
-        r"^\d+(?:\.\d+)*\s+[A-Z][^\n]*$"
+    _validate(chunk_size,chunk_overlap)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
     )
-
+    chunks = []
     current_section = None
-    current_text = ""
 
-    def save_chunk(text, metadata):
+   
+    def flush(text,base_metadata,section):
         text = text.strip()
 
         if not text:
             return
 
+        metadata = base_metadata.copy()
+        metadata["section"] = section
+
+        piece = Document(page_content=text, metadata=metadata)
+
         if len(text) <= chunk_size:
             chunks.append(
-                Document(
-                    page_content=text,
-                    metadata=metadata.copy(),
-                )
+                piece
             )
-            return
-
-        start = 0
-
-        while start < len(text):
-            end = start + chunk_size
-            chunk_text = text[start:end].strip()
-
-            if chunk_text:
-                chunks.append(
-                    Document(
-                        page_content=chunk_text,
-                        metadata=metadata.copy(),
-                    )
-                )
-
-            start += chunk_size - chunk_overlap
+        else:
+            chunks.extend(splitter.split_documents([piece]))
 
     for document in documents:
+        current_text= ""
+
         lines = document.page_content.splitlines()
 
-        for line in lines:
-            line = line.strip()
+        for raw_line in document.page_content.splitlines():
+
+            line = raw_line.strip()
 
             if not line:
                 continue
 
-            if heading_pattern.match(line):
-                if current_text:
-                    metadata = document.metadata.copy()
-                    metadata["section"] = current_section
-
-                    save_chunk(current_text, metadata)
+            if _is_heading(line):
+                if len(current_text.strip()) >= min_section_chars:
+                    flush(current_text, document.metadata, current_section)
+                    current_text =""
 
                 current_section = line
-                current_text = line + "\n"
-            else:
                 current_text += line + "\n"
 
-        if current_text:
-            metadata = document.metadata.copy()
-            metadata["section"] = current_section
+            else:
+                current_text += line + "\n"
+        flush(current_text, document.metadata, current_section)
 
-            save_chunk(current_text, metadata)
+    return _finalize(chunks, "structure_aware")
 
-            current_text = ""
 
-    return chunks
+
+CHUNKING_STRATEGIES = {
+    "recursive": create_recursive_chunks,
+    "fixed": create_fixed_chunks,
+    "semantic": create_semantic_chunks,
+    "structure_aware": create_structure_aware_chunks,
+}
+
+def create_chunks(documents, strategy="recursive", **params):
+    if strategy not in CHUNKING_STRATEGIES:
+        raise ValueError(
+            f"Unknown chunking strategy '{strategy}'. "
+            f"Choose from: {list(CHUNKING_STRATEGIES)}"
+        )
+
+    return CHUNKING_STRATEGIES[strategy](documents, **params)
