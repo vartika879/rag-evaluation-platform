@@ -12,6 +12,9 @@ langchain
 langchain-community
 langchain-core
 langchain-text-splitters
+langchain-groq
+langchain-cohere
+langchain-experimental
 
 # ================================
 # PDF / Document Processing
@@ -27,9 +30,7 @@ cohere
 # ================================
 # Vector Database / PostgreSQL
 # ================================
-psycopg[binary]
-pgvector
-
+qdrant-client
 # ================================
 # LLM
 # ================================
@@ -57,6 +58,7 @@ streamlit
 # ================================
 pandas
 numpy
+langsmith
 
 # ================================
 # Testing
