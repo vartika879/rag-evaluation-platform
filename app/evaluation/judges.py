@@ -18,8 +18,8 @@ from app.evaluation.metrics import refusal_metrics
 from app.generation.llm import complete_text, create_llm, is_refusal
  
 logger = logging.getLogger(__name__)
- 
-MAX_CONTEXT_CHARS = 8000
+
+JUDGE_MAX_CONTEXT_CHARS = 8000
 MAX_ANSWER_CHARS = 2000
 MAX_REFERENCE_CHARS = 1000
  
@@ -108,7 +108,7 @@ Question:
 {question}
  
 Context:
-{_clip(context, MAX_CONTEXT_CHARS)}
+{_clip(context, JUDGE_MAX_CONTEXT_CHARS)}
  
 Answer:
 {_clip(answer, MAX_ANSWER_CHARS)}
@@ -170,7 +170,7 @@ Reference answer (what a correct answer says):
 {_clip(reference, MAX_REFERENCE_CHARS)}
  
 Retrieved context:
-{_clip(context, MAX_CONTEXT_CHARS)}
+{_clip(context, JUDGE_MAX_CONTEXT_CHARS)}
  
 Does the context contain the information needed to give the reference answer?
 SUFFICIENT: all of it is there. PARTIAL: some of it. INSUFFICIENT: none of it.

@@ -89,7 +89,7 @@ def expand_query_detailed(query, max_terms=MAX_TERMS):
         "query": original,
         "added_terms": [],
         "changed": False,
-        "llm_called": True,
+        "llm_called": False,
         "fallback_reason": None,
         "latency_ms": 0,
         "usage": None,

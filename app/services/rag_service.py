@@ -56,12 +56,10 @@ def _with_top_k(config, top_k):
 def _chunk_id_text(value):
     return None if value is None else str(value)
  
- 
-def build_sources(final_chunks):
-    """One entry per (file, page). Keeps the best score and the preview of the
-    best chunk on that page, and lists every chunk id found there.
-    (The old version zipped deduplicated sources with un-deduplicated results,
-    which attached the wrong chunk id / preview to a page.)"""
+def trace_sources(final_chunks):
+    """One entry per (file, page) from a Trace's final_chunks.
+    Keeps the best score and the preview of the best chunk on that page,
+    and lists every chunk id found there."""
     sources = {}
  
     for chunk in final_chunks:
@@ -95,7 +93,7 @@ def trace_to_response(trace):
     rejected = trace.action == "refused_no_evidence"
  
     # chunks the checker rejected are debugging data, not sources for the user
-    sources = [] if rejected else build_sources(trace.final_chunks)
+    sources = [] if rejected else trace_sources(trace.final_chunks)
  
     return {
         "question": trace.question,

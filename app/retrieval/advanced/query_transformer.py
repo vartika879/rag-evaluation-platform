@@ -123,7 +123,7 @@ def rewrite_query(query, chat_history=None):
         result["fallback_reason"] = "no_history"
         return result
  
-    result["llm_called"] = True  # attempted (even if it fails below)
+    
  
     try:
         response = complete_text(build_rewrite_prompt(original, history_text))
@@ -131,7 +131,7 @@ def rewrite_query(query, chat_history=None):
         logger.warning("Query rewrite failed, using original query: %s", error)
         result["fallback_reason"] = f"llm_error: {error}"
         return result
- 
+    result["llm_called"] = True
     result["latency_ms"] = response["latency_ms"]
     result["usage"] = response["usage"]
  
