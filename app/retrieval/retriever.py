@@ -9,6 +9,7 @@ from app.config import (
     DEFAULT_TOP_K,
     MAX_CONTEXT_CHARS,
     MAX_TOP_K,
+    EMBEDDING_DIM, 
 )
 from app.embeddings.service import embed_query_text
 from app.schemas import RetrievedChunk, assign_ranks
@@ -66,7 +67,6 @@ def _build_filter(page_min=None, page_max=None, doc_id=None):
 # ---------------------------------------------------------------------------
 # Search
 # ---------------------------------------------------------------------------
- 
 def search_by_vector(
     query_vector,
     top_k=DEFAULT_TOP_K,
@@ -78,6 +78,11 @@ def search_by_vector(
 ):
     """Search Qdrant with an already computed vector (also used by HyDE)."""
     _validate_top_k(top_k)
+
+    if len(query_vector) != EMBEDDING_DIM:
+        raise ValueError(
+            f"Expected {EMBEDDING_DIM}-dim vector, got {len(query_vector)}."
+        )
  
     name = resolve_collection(collection_name or DEFAULT_COLLECTION)
     client = get_qdrant_client()
@@ -125,7 +130,7 @@ def retrieve_chunks(
     if not query or not query.strip():
         raise ValueError("Query cannot be empty.")
  
-    _validate_top_k(top_k)
+    
  
     query_vector = embed_query_text(query)
  
@@ -200,7 +205,7 @@ def build_context(results, max_chars=MAX_CONTEXT_CHARS):
  
  
 def build_sources(results):
-    """One entry per (file, page), keeping the best score on that page."""
+    """One entry per (file, page). Keeps the best score on that page and lists every chunk_id found there."""
     sources = {}
  
     for result in results:
