@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "question": "What is Retrieval-Augmented Generation?",
+    "ground_truth": "Retrieval-Augmented Generation combines retrieval of external knowledge with language generation to improve the factual grounding of large language models.",
+    "expected": "answerable"
+  },
+  {
+    "id": 2,
+    "question": "What problems does Retrieval-Augmented Generation help mitigate?",
+    "ground_truth": "RAG helps mitigate hallucination problems, knowledge update issues, and lack of domain-specific expertise in large language models.",
+    "expected": "answerable"
+  },
+  {
+    "id": 3,
+    "question": "What is the main challenge in the retriever module?",
+    "ground_truth": "The main challenge is finding an optimal trade-off between retrieval efficiency and retrieval quality.",
+    "expected": "answerable"
+  },
+  {
+    "id": 4,
+    "question": "What are the major types of retrieval fusion?",
+    "ground_truth": "Retrieval fusion can be categorized into query-based fusion, logits-based fusion, latent fusion, and parametric fusion.",
+    "expected": "answerable"
+  },
+  {
+    "id": 5,
+    "question": "How does RAG use external knowledge?",
+    "ground_truth": "RAG retrieves information from an external knowledge base and uses that information to augment the language model's generation.",
+    "expected": "answerable"
+  },
+  {
+    "id": 6,
+    "question": "Who is the current Prime Minister of India?",
+    "ground_truth": null,
+    "expected": "unanswerable"
+  },
+  {
+    "id": 7,
+    "question": "What is the capital of France?",
+    "ground_truth": null,
+    "expected": "unanswerable"
+  },
+  {
+    "id": 8,
+    "question": "What programming language was used to implement the RAG survey?",
+    "ground_truth": null,
+    "expected": "unanswerable"
+  }
+]

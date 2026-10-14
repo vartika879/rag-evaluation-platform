@@ -1,50 +1,1113 @@
-[
-  {
-    "id": 1,
-    "question": "What is Retrieval-Augmented Generation?",
-    "ground_truth": "Retrieval-Augmented Generation combines retrieval of external knowledge with language generation to improve the factual grounding of large language models.",
-    "expected": "answerable"
-  },
-  {
-    "id": 2,
-    "question": "What problems does Retrieval-Augmented Generation help mitigate?",
-    "ground_truth": "RAG helps mitigate hallucination problems, knowledge update issues, and lack of domain-specific expertise in large language models.",
-    "expected": "answerable"
-  },
-  {
-    "id": 3,
-    "question": "What is the main challenge in the retriever module?",
-    "ground_truth": "The main challenge is finding an optimal trade-off between retrieval efficiency and retrieval quality.",
-    "expected": "answerable"
-  },
-  {
-    "id": 4,
-    "question": "What are the major types of retrieval fusion?",
-    "ground_truth": "Retrieval fusion can be categorized into query-based fusion, logits-based fusion, latent fusion, and parametric fusion.",
-    "expected": "answerable"
-  },
-  {
-    "id": 5,
-    "question": "How does RAG use external knowledge?",
-    "ground_truth": "RAG retrieves information from an external knowledge base and uses that information to augment the language model's generation.",
-    "expected": "answerable"
-  },
-  {
-    "id": 6,
-    "question": "Who is the current Prime Minister of India?",
-    "ground_truth": null,
-    "expected": "unanswerable"
-  },
-  {
-    "id": 7,
-    "question": "What is the capital of France?",
-    "ground_truth": null,
-    "expected": "unanswerable"
-  },
-  {
-    "id": 8,
-    "question": "What programming language was used to implement the RAG survey?",
-    "ground_truth": null,
-    "expected": "unanswerable"
-  }
-]
+{
+  "version": 2,
+  "description": "Golden dataset for the arXiv RAG survey (2407.13193v4). Questions, answers and evidence snippets were drafted by an LLM from the PDF text; every snippet was machine-verified against the pypdf text layer (the text the loader sees). Needs human review: set reviewed=true per question.",
+  "source": "rag_survey.pdf",
+  "doc_id": "e1f208bba353",
+  "pages": 67,
+  "match": "squash",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Which problems of large language models does the survey say RAG helps with?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Hallucination problems, knowledge update issues, and a lack of domain-specific expertise.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 1,
+          "snippet": "such as hallucination problems, knowledge update issues, and lacking domain-specific expertise"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 2,
+      "question": "What are the four categories of retrieval fusion in the survey's taxonomy?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Query-based, logits-based, latent, and parametric fusion.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 1,
+          "snippet": "taxonomy of retrieval fusions, such as query-based, logits-based, latent, and parametric fusion"
+        },
+        {
+          "group": 1,
+          "page": 5,
+          "snippet": "can be categorized into four major types: query-based fusion, logits-based fusion, latent fusion, and parametric fusion"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 3,
+      "question": "Why is it expensive to update the knowledge stored inside an LLM?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Updating it requires retraining or fine-tuning the LLM on new data, which is a costly process.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 2,
+          "snippet": "it is necessary to retrain/fine-tune LLMs with new data, which is a costly process"
+        }
+      ],
+      "tags": [],
+      "section_hint": "1 Introduction",
+      "reviewed": false
+    },
+    {
+      "id": 4,
+      "question": "Along which dimensions does the survey compare the different retrieval fusions?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Accessibility, efficiency, implementation complexity, and use cases.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 3,
+          "snippet": "a structured comparison across accessibility, efficiency, implementation complexity, and use cases"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "1 Introduction",
+      "reviewed": false
+    },
+    {
+      "id": 5,
+      "question": "Which three modules make up a typical RAG system?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "The retriever, the generator, and the retrieval fusions.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 4,
+          "snippet": "the RAG system typically consists of three modules: the retriever, the generator, and the retrieval fusions"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "2 Overview",
+      "reviewed": false
+    },
+    {
+      "id": 6,
+      "question": "What components does the retriever module consist of?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "An encoder that turns inputs into embeddings, an efficient index that supports approximate nearest neighbor (ANN) search, and a vector database that stores the knowledge as key-value pairs.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 4,
+          "snippet": "an encoder for encoding inputs into embeddings, an efficient indexing that supports approximate nearest"
+        },
+        {
+          "group": 2,
+          "page": 5,
+          "snippet": "a vector database for storing external knowledge in the form of key-value pairs"
+        }
+      ],
+      "tags": [
+        "list",
+        "spans_pages"
+      ],
+      "section_hint": "2 Overview",
+      "reviewed": false
+    },
+    {
+      "id": 7,
+      "question": "What is the main difficulty in building the retriever module?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Finding the optimal trade-off between retrieval efficiency and retrieval quality.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 5,
+          "snippet": "The main challenge in the retriever module is finding the optimal trade-off between retrieval efficiency and retrieval quality"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "2 Overview",
+      "reviewed": false
+    },
+    {
+      "id": 8,
+      "question": "What does query-based fusion do?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "It augments the inputs with the retrieved information before feeding them into the generator.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 5,
+          "snippet": "The query-based fusion augments inputs with retrievals before feeding them into the generators"
+        }
+      ],
+      "tags": [
+        "definition"
+      ],
+      "section_hint": "2 Overview",
+      "reviewed": false
+    },
+    {
+      "id": 9,
+      "question": "Into which three categories do the generators in RAG systems fall?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Proprietary LLMs, open-weight pretrained LLMs, and retrieval-aware generators.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 5,
+          "snippet": "Generator modules in RAG systems fall into three categories. Proprietary LLMs"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "2 Overview",
+      "reviewed": false
+    },
+    {
+      "id": 10,
+      "question": "What is the main challenge of chunking, and which trade-off does it involve?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Finding the best chunk size, a trade-off between text semantics and encoding efficiency.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 6,
+          "snippet": "the main challenge of the chunking techniques is to find the best chunking size to make a better trade-off between text semantics and encoding efficiency"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "3.1.1 Chunking Corpus",
+      "reviewed": false
+    },
+    {
+      "id": 11,
+      "question": "Which factors should be considered when choosing a chunk size?",
+      "type": "multi_hop",
+      "expected": "answerable",
+      "ground_truth": "The task's preference, the encoder's preference, and the query's preference.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 6,
+          "snippet": "Task’s preference. Different tasks benefit from different chunk sizes"
+        },
+        {
+          "group": 2,
+          "page": 6,
+          "snippet": "Encoder’s preference. Different encoder models have varying encoding capabilities on texts with different lengths"
+        },
+        {
+          "group": 3,
+          "page": 7,
+          "snippet": "Query’s preference. The length of the user’s queries should be aligned with the chunking size"
+        }
+      ],
+      "tags": [
+        "list",
+        "spans_pages",
+        "project_relevant"
+      ],
+      "section_hint": "3.1.1 Chunking Corpus",
+      "reviewed": false
+    },
+    {
+      "id": 12,
+      "question": "What chunk sizes does the survey suggest for question answering and for summarization?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "About 128 tokens for question answering and about 512 tokens for summarization.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 6,
+          "snippet": "the chunk size of 128 tokens is enough"
+        },
+        {
+          "group": 2,
+          "page": 6,
+          "snippet": "the choice for chunk size can be 512 tokens due to lengthy documents"
+        }
+      ],
+      "tags": [
+        "numeric",
+        "project_relevant"
+      ],
+      "section_hint": "3.1.1 Chunking Corpus",
+      "reviewed": false
+    },
+    {
+      "id": 13,
+      "question": "What types of chunking techniques exist?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Chunking with a fixed length, semantic chunking, and content-based chunking.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 7,
+          "snippet": "three types of chunking techniques, including the chunking with fixed length, the semantic chunking, and the content-based chunking"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "3.1.1 Chunking Corpus",
+      "reviewed": false
+    },
+    {
+      "id": 14,
+      "question": "Is there a universal rule for choosing the chunk size?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "No. There is no golden rule; it depends on the specific RAG scenario.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 7,
+          "snippet": "there is no golden rule for determining the chunking size, and it depends on the specific RAG scenarios"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "3.1.1 Chunking Corpus",
+      "reviewed": false
+    },
+    {
+      "id": 15,
+      "question": "How do sparse and dense encodings differ?",
+      "type": "multi_hop",
+      "expected": "answerable",
+      "ground_truth": "Sparse encodings are high-dimensional vectors in which most elements are zero; dense encodings come from neural networks and most of their elements are non-zero floating-point values.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 7,
+          "snippet": "The sparse encoding represents text by creating high-dimensional vectors where most elements are zero"
+        },
+        {
+          "group": 2,
+          "page": 8,
+          "snippet": "most elements are non-zero floating points"
+        }
+      ],
+      "tags": [
+        "comparison",
+        "spans_pages"
+      ],
+      "section_hint": "3.1.2 Encoding Chunks",
+      "reviewed": false
+    },
+    {
+      "id": 16,
+      "question": "What does BM25 take into account when scoring documents?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Term frequency, inverse document frequency, and document length normalization.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 8,
+          "snippet": "balancing term frequency, inverse document frequency, and document length normalization"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "3.1.2 Encoding Chunks",
+      "reviewed": false
+    },
+    {
+      "id": 17,
+      "question": "What is the key challenge when building the index in a vector database?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Making a good trade-off between search quality and search efficiency.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 8,
+          "snippet": "The key challenge of indexing is making a good trade-off between search quality and search efficiency"
+        }
+      ],
+      "tags": [],
+      "section_hint": "3.1.3 Building the Index",
+      "reviewed": false
+    },
+    {
+      "id": 18,
+      "question": "Which techniques does the survey mention for reducing the dimensionality of embeddings?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Principal component analysis (PCA), locality-sensitive hashing (LSH), product quantization (PQ) and AutoCompressor.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 9,
+          "snippet": "The basic but effective dimension reduction is the principal component analysis (PCA)"
+        },
+        {
+          "group": 2,
+          "page": 9,
+          "snippet": "Another popular and advanced dimension reduction is locality-sensitive hashing (LSH)"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "3.1.3 Building the Index",
+      "reviewed": false
+    },
+    {
+      "id": 19,
+      "question": "What kind of structure does HNSW use to search for nearest neighbors?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "A hierarchical, multi-layer graph in which vectors are nodes connected to their nearest neighbors.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 9,
+          "snippet": "uses a hierarchical graph structure to perform ANN search in high-dimensional spaces efficiently"
+        }
+      ],
+      "tags": [],
+      "section_hint": "3.1.3 Building the Index",
+      "reviewed": false
+    },
+    {
+      "id": 20,
+      "question": "For question answering, what should be stored as key and as value in the knowledge base?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "The question embedding as the key and the question-answer pair as the value.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 10,
+          "snippet": "store the question embedding as the key and question-answer pairs as the value"
+        }
+      ],
+      "tags": [],
+      "section_hint": "3.1.4 Building the KB with Key-Value Pairs",
+      "reviewed": false
+    },
+    {
+      "id": 21,
+      "question": "What are the steps involved in querying the retriever?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Encoding the query, ANN search, and post-processing.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 11,
+          "snippet": "three steps as shown in Figure 2(b): encoding queries, ANN search, and post-processing"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "3.2 Querying the Retriever",
+      "reviewed": false
+    },
+    {
+      "id": 22,
+      "question": "Why must the same encoder be used for queries and for chunks?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "To align the query with the pre-built embedding space.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 11,
+          "snippet": "To align with the pre-built embedding space, the retriever uses the same encoder to encode queries"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "3.2.1 Encoding Queries and ANN Search",
+      "reviewed": false
+    },
+    {
+      "id": 23,
+      "question": "What does reranking do after the initial retrieval?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "It reorders the retrieved information according to task-specific objectives, because the first retrieval uses task-agnostic metrics such as Euclidean distance.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 12,
+          "snippet": "Reranking aims to reorder the retrieved information based on task-specific objectives"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "3.2.2 Post-Processing",
+      "reviewed": false
+    },
+    {
+      "id": 24,
+      "question": "Which retrieval fusions work with black-box LLMs, and why is text concatenation suited to proprietary models?",
+      "type": "multi_hop",
+      "expected": "answerable",
+      "ground_truth": "Only query-based fusion with text concatenation and logits-based fusion. Text concatenation works on raw text, so API-only proprietary LLMs such as GPT-4 can be used.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 17,
+          "snippet": "Only query-based fusion (text concatenation) and logits-based fusion are compatible with black-box LLMs"
+        },
+        {
+          "group": 2,
+          "page": 12,
+          "snippet": "Text concatenation involves performing query-based fusion with raw texts, making it particularly suitable for proprietary LLMs like GPT-4"
+        }
+      ],
+      "tags": [
+        "comparison",
+        "spans_pages"
+      ],
+      "section_hint": "4.5 Comparison of Different Retrieval Fusions",
+      "reviewed": false
+    },
+    {
+      "id": 25,
+      "question": "What is FiD and how does it use retrieved passages?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "FiD encodes the retrieved passages into sparse or dense representations and feeds the concatenated features to a generator (feature concatenation).",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 13,
+          "snippet": "FID (Izacard and Grave 2021), which first encodes the retrieved passages into sparse or dense representations"
+        }
+      ],
+      "tags": [],
+      "section_hint": "4.1 Query-based Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 26,
+      "question": "How does kNN-LM use retrieved neighbors?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "It aggregates the logits of the top-k nearest neighbors' targets and interpolates the final predictions (ensemble-based logits fusion).",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 14,
+          "snippet": "kNN-LM (Khandelwal et al. 2020), which aggregates the logits of the top-k nearest neighbors’ targets and then interpolates the final predictions"
+        }
+      ],
+      "tags": [],
+      "section_hint": "4.2 Logits-based Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 27,
+      "question": "What did RETRO show about the size of the retrieval database?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "With a 2 trillion token database RETRO matched models like GPT-3 and Jurassic-1 while using 25 times fewer parameters.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 15,
+          "snippet": "RETRO, with a 2 trillion token database, attains performance comparable to that of major models like GPT-3 and Jurassic-1, albeit with 25 times fewer parameters"
+        }
+      ],
+      "tags": [
+        "numeric"
+      ],
+      "section_hint": "4.3 Latent Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 28,
+      "question": "What are the two branches of logits-based fusion?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Ensemble-based fusion and calibration-based fusion.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 13,
+          "snippet": "logits-based fusion can be categorized into two branches, i.e., ensemble-based fusion and calibration-based"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "4.2 Logits-based Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 29,
+      "question": "How does the parametric fusion workflow run at inference time?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "It follows a Retrieve, Update, Generate workflow: retrieve the top-k documents, merge their parameter updates into a temporary adapted model, then generate the answer.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 16,
+          "snippet": "follows a Retrieve Update Generate workflow"
+        },
+        {
+          "group": 1,
+          "page": 16,
+          "snippet": "retrieves top-k relevant documents, merges (or composes) their corresponding parameter updates to obtain a temporary adapted model"
+        }
+      ],
+      "tags": [],
+      "section_hint": "4.4 Parametric Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 30,
+      "question": "Why is text concatenation often chosen as the base in hybrid fusion?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Because it only modifies the input and needs no access to hidden states or logits and no additional model training.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 19,
+          "snippet": "Text concatenation is often chosen as the “base” because it only modifies the input without requiring access to hidden states/logits or additional model training"
+        }
+      ],
+      "tags": [],
+      "section_hint": "4.6 Hybrid Retrieval Fusion",
+      "reviewed": false
+    },
+    {
+      "id": 31,
+      "question": "What does 'lost in the middle' mean for long-context generators?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Models can be position-sensitive and degrade when the relevant information sits in the middle of a long input.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 20,
+          "snippet": "Models can be position-sensitive and degrade when relevant information is “lost in the middle”"
+        }
+      ],
+      "tags": [],
+      "section_hint": "5.1 Architectural Requirements for Effective RAG",
+      "reviewed": false
+    },
+    {
+      "id": 32,
+      "question": "Why can FiD- or RETRO-style architectures be better than raw concatenation?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Cross-attention or separate information encoding uses the retrieved information more systematically than raw concatenation.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 22,
+          "snippet": "cross-attention or separate information encoding (FiD/RETRO) tends to use information more systematically than raw concatenation"
+        }
+      ],
+      "tags": [],
+      "section_hint": "5.3 How does Generator Design Impact RAG Performance",
+      "reviewed": false
+    },
+    {
+      "id": 33,
+      "question": "Into which four focus areas does the survey group RAG evaluation metrics?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Retrieval quality, generation performance, end-to-end robustness, and system-level efficiency.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "four evaluation focus, including retrieval quality, generation performance, end-to-end robustness, and system-level efficiency"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 34,
+      "question": "What does answer faithfulness (groundedness) measure?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Whether the generated answer is entirely supported by the provided context, which guards against hallucinations.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "Answer Faithfulness (or Groundedness) measures whether the generated answer is entirely supported by the provided context"
+        }
+      ],
+      "tags": [
+        "definition",
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 35,
+      "question": "Can an answer be faithful to the retrieved context and still be wrong?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Yes. If the retrieved information itself is wrong, an answer can be faithful to it yet factually incorrect.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "an answer can be faithful to retrieved information yet factually incorrect if the information itself is wrong"
+        },
+        {
+          "group": 1,
+          "page": 29,
+          "snippet": "an answer can be faithful to an incorrect retrieved context"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 36,
+      "question": "What does negative rejection mean in RAG robustness evaluation?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Refusing to answer when the retrieved information is insufficient.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "Negative Rejection (refusing to answer when retrieved information is insufficient)"
+        }
+      ],
+      "tags": [
+        "definition",
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 37,
+      "question": "Which traditional information retrieval metrics are used to assess context relevance?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Precision@k, Recall@k and NDCG.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "Precision@k, Recall@k, and NDCG that measure the topical alignment between retrieved passages and the query"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 38,
+      "question": "Which system-level efficiency measurements does the survey highlight for RAG?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Latency (including tail latencies such as p95 and p99 and time-to-first-token), cost per query, throughput, and memory footprint.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 30,
+          "snippet": "latency (particularly tail latencies such as p95 and p99, as well as time-to-first-token)"
+        }
+      ],
+      "tags": [
+        "list",
+        "project_relevant"
+      ],
+      "section_hint": "7.1 A Taxonomy of RAG Evaluation",
+      "reviewed": false
+    },
+    {
+      "id": 39,
+      "question": "Why is it difficult to tell whether a wrong answer came from the retriever or from the generator?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Both components are tightly coupled during inference and usually evaluated only through the final answer, and attribution needs expensive fine-grained annotations.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 31,
+          "snippet": "Disentangling these two sources of error is non-trivial, as both components are tightly coupled during inference"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "7.2 Key Evaluation Challenges",
+      "reviewed": false
+    },
+    {
+      "id": 40,
+      "question": "Why are BLEU and ROUGE unreliable for evaluating RAG answers?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "In open-ended generation they correlate only weakly or inconsistently with human ratings of answer quality.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 31,
+          "snippet": "traditional lexical-overlap metrics such as BLEU and ROUGE are often unreliable proxies for human-perceived answer quality"
+        }
+      ],
+      "tags": [],
+      "section_hint": "7.2 Key Evaluation Challenges",
+      "reviewed": false
+    },
+    {
+      "id": 41,
+      "question": "What staged approach to improving retrieval quality does Databricks recommend?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "First establish an evaluation framework, then apply hybrid search, metadata filtering, and reranking as progressively more expensive steps.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 38,
+          "snippet": "recommends establishing an evaluation framework first, then applying hybrid search, metadata filtering, and reranking as progressively more expensive"
+        }
+      ],
+      "tags": [
+        "project_relevant"
+      ],
+      "section_hint": "9.3 Deployment Considerations for Production RAG",
+      "reviewed": false
+    },
+    {
+      "id": 42,
+      "question": "What are the main cost drivers of a production RAG system?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Ingestion/embedding, vector search, reranking, and LLM token usage.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 38,
+          "snippet": "Key cost drivers include ingestion/embedding, vector search, reranking, and LLM token usage"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "9.3 Deployment Considerations for Production RAG",
+      "reviewed": false
+    },
+    {
+      "id": 43,
+      "question": "What are the three layers of defense against prompt injection and similar attacks in RAG?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Ingestion-time provenance and access control, retrieval-time anomaly detection, and generation-time verification and correction.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 40,
+          "snippet": "provenance and access control, (ii) retrieval-time anomaly detection, and (iii) generation-time verification and correction"
+        }
+      ],
+      "tags": [
+        "list"
+      ],
+      "section_hint": "10.1 Security and Privacy Considerations for RAG",
+      "reviewed": false
+    },
+    {
+      "id": 44,
+      "question": "What is semantic drift in multi-round retrieval?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Over several rounds the retrieved content gradually deviates from the original information need because small errors compound.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 41,
+          "snippet": "the retrieved content may gradually deviate from the original information need"
+        }
+      ],
+      "tags": [
+        "definition"
+      ],
+      "section_hint": "10.2 Retrieval Quality",
+      "reviewed": false
+    },
+    {
+      "id": 45,
+      "question": "Which part of retrieval is usually the bottleneck for databases with fewer than a million entries?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "The encoding phase.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 41,
+          "snippet": "For smaller retrieval databases, such as those with fewer than 1 million entries, the encoding phase is often the primary bottleneck"
+        }
+      ],
+      "tags": [
+        "numeric"
+      ],
+      "section_hint": "10.3 RAG Efficiency",
+      "reviewed": false
+    },
+    {
+      "id": 46,
+      "question": "How do long-context LLMs compare with RAG on numerical reasoning tasks?",
+      "type": "single_hop",
+      "expected": "answerable",
+      "ground_truth": "Long-context LLMs underperform RAG on tasks such as financial QA, because verbose context can obscure key facts.",
+      "evidence": [
+        {
+          "group": 1,
+          "page": 42,
+          "snippet": "on tasks requiring numerical reasoning (e.g., financial QA), long-context LLMs underperform compared to RAG"
+        }
+      ],
+      "tags": [
+        "comparison"
+      ],
+      "section_hint": "10.5 RAG vs. Long-Context LLMs",
+      "reviewed": false
+    },
+    {
+      "id": 47,
+      "question": "Who is the current Prime Minister of India?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "off_topic"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 48,
+      "question": "What is the capital of France?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "off_topic"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 49,
+      "question": "Who won the FIFA World Cup in 2022?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "off_topic"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 50,
+      "question": "At what temperature does water boil at sea level?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "off_topic"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 51,
+      "question": "What is the embedding dimension of the text-embedding-ada-002 model?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 52,
+      "question": "What is the price per million tokens of GPT-4?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 53,
+      "question": "What accuracy does kNN-LM reach on WikiText-103?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 54,
+      "question": "What is the default chunk size of LangChain's RecursiveCharacterTextSplitter?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent",
+        "project_relevant"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 55,
+      "question": "What similarity score threshold does the survey recommend for treating a retrieved chunk as irrelevant?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent",
+        "project_relevant"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 56,
+      "question": "How does HyDE generate hypothetical documents to improve retrieval?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent",
+        "project_relevant"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 57,
+      "question": "Which Qdrant index parameters does the survey recommend for HNSW?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent",
+        "project_relevant"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 58,
+      "question": "Which Stanford University researchers co-authored this survey?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 59,
+      "question": "What value of the constant k does the survey recommend for reciprocal rank fusion?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent",
+        "project_relevant"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    },
+    {
+      "id": 60,
+      "question": "Which GPU model was used to run the experiments in this survey?",
+      "type": "unanswerable",
+      "expected": "unanswerable",
+      "ground_truth": null,
+      "evidence": [],
+      "tags": [
+        "related_absent"
+      ],
+      "section_hint": null,
+      "reviewed": false
+    }
+  ]
+}
