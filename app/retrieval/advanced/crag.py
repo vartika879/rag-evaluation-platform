@@ -140,34 +140,27 @@ def evaluate_context(query, results):
 # ---------------------------------------------------------------------------
 # 2. Cheap score-based check (no LLM)
 # ---------------------------------------------------------------------------
- 
 def has_supporting_evidence(results, threshold=0.30):
     """True if the best ABSOLUTE score reaches `threshold`.
- 
-    Uses the rerank score if present, otherwise the vector (cosine) score.
-    Hybrid / RRF / BM25 scores have no fixed scale, so when only those exist
-    this returns True (no opinion). The 0.30 default is a guess: calibrate it
-    on the golden dataset before relying on it.
+    
+    Uses rerank score first, then vector score. Hybrid/BM25/RRF scores have no
+    fixed scale, so when only those exist, returns True (no opinion — let the
+    LLM grading decide).
+    
+    The 0.30 default is a guess: calibrate it on the golden dataset.
     """
     if not results:
         return False
- 
+
     best = None
- 
     for chunk in results:
         value = getattr(chunk, "rerank_score", None)
- 
         if value is None:
             value = getattr(chunk, "vector_score", None)
- 
-        if value is None and not hasattr(chunk, "hybrid_score"):
-            value = getattr(chunk, "score", None)  # raw Qdrant point
- 
         if value is not None:
             best = value if best is None else max(best, value)
- 
+
     return True if best is None else best >= threshold
- 
  
 # ---------------------------------------------------------------------------
 # 3. Corrective retrieval

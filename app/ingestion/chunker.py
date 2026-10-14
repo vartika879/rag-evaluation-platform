@@ -38,6 +38,7 @@ def create_recursive_chunks(
         chunk_size=1000,
         chunk_overlap=150
         ):
+    _validate(chunk_size, chunk_overlap)
 
     splitter=RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
@@ -141,6 +142,7 @@ def create_structure_aware_chunks(
 
     for document in documents:
         current_text= ""
+        current_section = None   
 
         lines = document.page_content.splitlines()
 

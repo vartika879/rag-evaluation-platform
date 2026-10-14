@@ -37,9 +37,10 @@ def min_max_normalize(scores):
  
     return [(score - low) / (high - low) for score in scores]
 
+
 def _validate(top_k, vector_weight, method):
-    if not isinstance(top_k, int) or top_k < 1:
-        raise ValueError("top_k must be an integer >= 1.")
+    if not isinstance(top_k, int) or not 1 <= top_k <= MAX_TOP_K:
+        raise ValueError(f"top_k must be between 1 and {MAX_TOP_K}.")
  
     if not 0 <= vector_weight <= 1:
         raise ValueError("vector_weight must be between 0 and 1.")
