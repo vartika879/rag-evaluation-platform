@@ -253,9 +253,10 @@ elif page == "Evaluation":
         "here. No evaluation scores are fabricated by this dashboard."
     )
     st.write(
-        "Existing modules: retrieval_eval.py, context_eval.py, "
-        "answer_eval.py and evaluation_report.py"
-    )
+    "Run evaluations from the CLI: "
+    "`python scripts/run_eval.py run --preset vector`"
+)
+    st.write("Reports: `evaluation/reports/`, Runs: `evaluation/runs/`")
 
 elif page == "Logs & Debug":
     st.subheader("Logs & Debug")

@@ -14,7 +14,7 @@ def test_health_endpoint():
 
 
 def test_ask_returns_answer_and_sources(monkeypatch):
-    def fake_answer_question(question, top_k=5):
+    def fake_answer_question(question, top_k=None):
         return {
             "question": question,
             "answer": "RAG combines retrieval and generation.",
@@ -22,6 +22,8 @@ def test_ask_returns_answer_and_sources(monkeypatch):
             "sources": [
                 {"source": "rag_survey.pdf", "page": 1, "score": 0.8}
             ],
+            "retrieved_count": 1, 
+            "context_preview": "...", 
         }
 
     monkeypatch.setattr(api_module, "answer_question", fake_answer_question)
@@ -56,12 +58,14 @@ def test_ask_rejects_invalid_top_k():
 
 
 def test_ask_refuses_when_no_documents_found(monkeypatch):
-    def fake_answer_question(question, top_k=5):
+    def fake_answer_question(question, top_k=None):
         return {
             "question": question,
             "answer": "I don't have enough information in the provided documents.",
             "refused": True,
             "sources": [],
+            "retrieved_count": 1,
+            "context_preview": "...",
         }
 
     monkeypatch.setattr(api_module, "answer_question", fake_answer_question)
@@ -80,7 +84,7 @@ def test_ask_refuses_when_no_documents_found(monkeypatch):
 def test_ask_returns_llm_refusal(monkeypatch):
     refusal = "I don't have enough information in the provided documents."
 
-    def fake_answer_question(question, top_k=5):
+    def fake_answer_question(question, top_k=None):
         return {
             "question": question,
             "answer": refusal,
@@ -88,6 +92,8 @@ def test_ask_returns_llm_refusal(monkeypatch):
             "sources": [
                 {"source": "rag_survey.pdf", "page": 1, "score": 0.3}
             ],
+            "retrieved_count": 1,
+            "context_preview": "...",
         }
 
     monkeypatch.setattr(api_module, "answer_question", fake_answer_question)

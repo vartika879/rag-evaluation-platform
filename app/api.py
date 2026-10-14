@@ -2,9 +2,12 @@ import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import ensure_dirs, validate_env
 from app.schemas import AskRequest, AskResponse
 from app.services.rag_service import answer_question
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,6 +17,18 @@ app = FastAPI(
     version="1.0.0",
     description="Document-grounded question answering and debugging API",
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],       # dev ke liye; production mein specific origins daalo
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.on_event("startup")
+def _startup():
+    validate_env()
+    ensure_dirs()
 
 
 @app.get("/health")
