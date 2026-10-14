@@ -764,6 +764,9 @@ for k in [1, 3, 5, 10]:
 
         """
 
+
+
+"""
 from app.embeddings.service import create_embedding_model
 from app.retrieval.retriever import retrieve_with_query_vector
 from app.vectorstore.qdrant_store import COLLECTION_NAME
@@ -794,3 +797,719 @@ for k in [1, 3, 5, 10]:
             f"Page: {result.payload.get('page')} | "
             f"Score: {result.score:.4f}"
         )
+
+        """
+
+
+"""
+from app.retrieval.query_transformer import transform_query
+from app.retrieval.retriever import retrieve_chunks
+
+query = "Iska main benefit kya hai?"
+conversation_context = "The topic is Retrieval-Augmented Generation (RAG)."
+
+new_query = transform_query(query, conversation_context)
+
+print("Original:", query)
+print("Transformed:", new_query)
+
+results = retrieve_chunks(new_query, top_k=5)
+
+for result in results:
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:200]
+    )
+    """
+
+
+"""
+from app.retrieval.retriever import retrieve_chunks
+results = retrieve_chunks(
+    "Iska main benefit kya hai?",
+    top_k=5
+)
+
+for result in results:
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:200]
+    )
+    """
+"""
+
+from app.retrieval.query_transformer import transform_query
+from app. retrieval.retriever import retrieve_chunks,build_context
+
+from app.generation.llm import create_llm,generate_answer
+
+query = "Iska main benefit kya hai?"
+conversation_context = "The topic is Retrieval-Augmented Generation (RAG)."
+
+
+# original retriever 
+
+original_results=retrieve_chunks(query,top_k=5)
+original_context=build_context(original_results)
+
+
+# Transformed retrieval
+new_query = transform_query(query, conversation_context)
+new_results = retrieve_chunks(new_query, top_k=5)
+new_context = build_context(new_results)
+
+
+llm = create_llm()
+
+original_answer = generate_answer(
+    llm, query, original_context
+)
+
+transformed_answer = generate_answer(
+    llm, query, new_context
+)
+
+
+
+print("\nORIGINAL ANSWER:")
+print(original_answer["answer"])
+
+print("\nTRANSFORMED QUERY:")
+print(new_query)
+
+print("\nTRANSFORMED ANSWER:")
+print(transformed_answer["answer"])
+
+"""
+
+"""
+
+from app.retrieval.multi_query import generate_queries
+from app.retrieval.retriever import retrieve_chunks
+
+query = "How does RAG reduce hallucinations?"
+
+queries = generate_queries(query)
+
+print("Generated Queries:")
+for q in queries:
+    print("-", q)
+
+all_results = {}
+
+for q in queries:
+    results = retrieve_chunks(q, top_k=3)
+
+    for result in results:
+        chunk_id = result.payload["chunk_id"]
+        all_results[chunk_id] = result
+
+print("\nUnique Retrieved Chunks:")
+
+for result in all_results.values():
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:150]
+    )
+
+
+original_results = retrieve_chunks(
+    "How does RAG reduce hallucinations?",
+    top_k=5
+)
+
+print("Original Query Results:")
+
+for result in original_results:
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:150]
+    )
+
+    """
+
+
+"""
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.reranker import rerank_results
+
+query = "How does RAG reduce hallucinations?"
+
+results = retrieve_chunks(query, top_k=10)
+
+print("\nBEFORE RERANKING:")
+
+for result in results:
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:120]
+    )
+
+reranked = rerank_results(
+    query,
+    results,
+    top_k=5
+)
+
+print("\nAFTER RERANKING:")
+
+for result in reranked:
+    print(
+        result["page"],
+        result["score"],
+        result["text"][:120]
+    )
+
+
+    """
+
+
+"""
+
+from app.retrieval.hyde import create_hyde_embedding
+from app.retrieval.retriever import retrieve_with_query_vector
+
+query = "How does RAG reduce hallucinations?"
+
+hypothetical_document, vector = create_hyde_embedding(query)
+
+results = retrieve_with_query_vector(
+    vector,
+    top_k=5
+)
+
+print("\nHYPOTHETICAL DOCUMENT:")
+print(hypothetical_document)
+
+print("\nHYDE RESULTS:")
+
+for result in results:
+    print(
+        result.payload.get("page"),
+        result.score,
+        result.payload.get("text", "")[:150]
+    )
+    """
+
+
+"""
+
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.context_compressor import compress_context
+
+query = "How does RAG reduce hallucinations?"
+
+results = retrieve_chunks(query, top_k=5)
+
+print("\nORIGINAL CONTEXT:")
+
+for result in results:
+    print(
+        "\nPage:",
+        result.payload.get("page"),
+        "\n",
+        result.payload.get("text", "")[:300]
+    )
+
+compressed = compress_context(query, results)
+
+print("\nCOMPRESSED CONTEXT:")
+print(compressed)
+
+"""
+
+"""
+
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.crag import evaluate_context
+
+query =  "Who is the current Prime Minister of India?"
+
+results = retrieve_chunks(query, top_k=5)
+
+decision = evaluate_context(query, results)
+
+print("CRAG DECISION:", decision)
+"""
+
+"""
+
+
+"""
+"""
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.crag import (
+    evaluate_context,
+    corrective_retrieval,
+    has_supporting_evidence
+)
+
+query = "Who is the current Prime Minister of India?"
+
+results = retrieve_chunks(query, top_k=5)
+
+decision = evaluate_context(query, results)
+
+print("CRAG DECISION:", decision)
+"""
+"""
+if decision == "BAD":
+    corrected_results = corrective_retrieval(query)
+
+    print(
+        "Corrective retrieval:",
+        len(corrected_results),
+        "chunks"
+    )
+
+"""
+
+
+"""
+if decision == "BAD":
+    corrected_results = corrective_retrieval(query)
+
+    print("Corrective retrieval:", len(corrected_results), "chunks")
+
+    for i, result in enumerate(corrected_results, start=1):
+        print(
+            f"{i}. Page: {result.payload.get('page')}, "
+            f"Score: {result.score:.4f}"
+        )
+
+        """    """
+
+if decision == "BAD":
+    corrected_results = corrective_retrieval(query)
+
+    has_evidence = has_supporting_evidence(
+        corrected_results
+    )
+
+    if has_evidence:
+        print("Evidence found. Continue to LLM.")
+    else:
+        print("No supporting evidence found.")
+        print(
+            "I don't have enough information "
+            "in the provided documents."
+        )
+
+        """
+
+"""
+
+from app.retrieval.query_expansion import expand_query
+from app.retrieval.retriever import retrieve_chunks
+
+query = "RAG ka benefit?"
+
+expanded_query = expand_query(query)
+
+print("ORIGINAL QUERY:")
+print(query)
+
+print("\nEXPANDED QUERY:")
+print(expanded_query)
+
+original_results = retrieve_chunks(query, top_k=5)
+expanded_results = retrieve_chunks(expanded_query, top_k=5)
+
+print("\nORIGINAL RESULTS:")
+for result in original_results:
+    print(
+        result.payload["chunk_id"],
+        result.payload.get("page"),
+        round(result.score, 4),
+    )
+
+print("\nEXPANDED RESULTS:")
+for result in expanded_results:
+    print(
+        result.payload["chunk_id"],
+        result.payload.get("page"),
+        round(result.score, 4),
+    )
+
+
+    """
+
+
+
+#PHASE 5\
+
+from app.retrieval.retriever import retrieve_chunks
+
+query = "How does RAG reduce hallucinations?"
+"""
+results = retrieve_chunks(query, top_k=5)
+
+for rank, result in enumerate(results, start=1):
+    print(f"\nRank: {rank}")
+    print("Chunk ID:", result.payload.get("chunk_id"))
+    print("Page:", result.payload.get("page"))
+    print("Score:", round(result.score, 4))
+    print("Text:", result.payload.get("text", "")[:500])
+results = retrieve_chunks(
+    query,
+    top_k=20
+)
+
+for rank, result in enumerate(results, start=1):
+    print(
+        rank,
+        "Chunk:", result.payload.get("chunk_id"),
+        "Page:", result.payload.get("page"),
+        "Score:", round(result.score, 4)
+    )
+
+    
+
+
+
+
+
+query = "How does Retrieval-Augmented Generation reduce hallucinations in large language models?"
+
+results = retrieve_chunks(query, top_k=20)
+
+for rank, result in enumerate(results, start=1):
+    print(
+        rank,
+        "Chunk:", result.payload.get("chunk_id"),
+        "Page:", result.payload.get("page"),
+        "Score:", round(result.score, 4)
+    )
+
+
+    """
+
+"""
+
+query = "How does Retrieval-Augmented Generation reduce hallucinations in large language models?"
+results = retrieve_chunks(query, top_k=20)
+for rank, result in enumerate(results[:5], start=1):
+    print(f"\nRank: {rank}")
+    print("Chunk:", result.payload.get("chunk_id"))
+    print("Page:", result.payload.get("page"))
+    print("Score:", round(result.score, 4))
+    print("Text:")
+    print(result.payload.get("text", "")[:800])
+
+
+    """
+"""
+
+from app.retrieval.retriever import retrieve_chunks
+
+query = (
+    "How does Retrieval-Augmented Generation "
+    "reduce hallucinations in large language models?"
+)
+
+results = retrieve_chunks(
+    query,
+    top_k=5,
+    page_min=0,
+    page_max=50,
+)
+
+for rank, result in enumerate(results, start=1):
+    print(
+        rank,
+        "Chunk:", result.payload.get("chunk_id"),
+        "Page:", result.payload.get("page"),
+        "Score:", round(result.score, 4),
+    )
+
+
+
+for rank, result in enumerate(results, start=1):
+    print("\n" + "=" * 80)
+    print("RANK:", rank)
+    print("Chunk:", result.payload.get("chunk_id"))
+    print("Page:", result.payload.get("page"))
+    print("Score:", round(result.score, 4))
+    print("\nTEXT:")
+    print(result.payload.get("text", ""))"""
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+
+from app.retrieval.bm25 import create_bm25_index, retrieve_bm25
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks
+
+query = (
+    "How does Retrieval-Augmented Generation "
+    "reduce hallucinations in large language models?"
+)
+
+# Load the same document and create the same baseline chunks
+documents = load_pdf("data/documents/rag_survey.pdf")
+chunks = create_recursive_chunks(documents)
+
+# Create BM25 index
+bm25 = create_bm25_index(chunks)
+
+# Retrieve Top-5
+results = retrieve_bm25(
+    bm25,
+    chunks,
+    query,
+    top_k=5,
+)
+
+# Print results
+for rank, result in enumerate(results, start=1):
+    chunk = result["chunk"]
+
+    print("\n" + "=" * 80)
+    print("RANK:", rank)
+    print("Chunk:", result["chunk_id"])
+    print("Page:", chunk.metadata.get("page"))
+    print("BM25 Score:", round(result["score"], 4))
+    print("\nTEXT:")
+    print(chunk.page_content)"""
+
+
+
+
+
+
+
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks
+from app.embeddings.service import create_embedding_model
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.bm25 import create_bm25_index, retrieve_bm25
+from app.retrieval.hybrid import hybrid_search
+
+
+query = (
+    "How does Retrieval-Augmented Generation "
+    "reduce hallucinations in large language models?"
+)
+
+# --------------------------------------------------
+# 1. Load same document + same baseline chunks
+# --------------------------------------------------
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+chunks = create_recursive_chunks(documents)
+
+
+# --------------------------------------------------
+# 2. Vector retrieval
+# --------------------------------------------------
+
+vector_results = retrieve_chunks(
+    query,
+    top_k=5,
+    page_min=0,
+    page_max=50,
+)
+
+
+# --------------------------------------------------
+# 3. BM25 retrieval
+# --------------------------------------------------
+
+bm25 = create_bm25_index(chunks)
+
+bm25_results = retrieve_bm25(
+    bm25,
+    chunks,
+    query,
+    top_k=5,
+)
+
+
+# --------------------------------------------------
+# 4. Hybrid retrieval
+# --------------------------------------------------
+
+hybrid_results = hybrid_search(
+    vector_results=vector_results,
+    bm25_results=bm25_results,
+    top_k=5,
+    vector_weight=0.5,
+)
+
+
+# --------------------------------------------------
+# 5. Print Hybrid results
+# --------------------------------------------------
+
+print("\n" + "#" * 80)
+print("HYBRID RETRIEVAL RESULTS")
+print("#" * 80)
+
+for rank, result in enumerate(hybrid_results, start=1):
+
+    chunk_id = result["chunk_id"]
+
+    # Find original chunk
+    chunk = next(
+        chunk
+        for chunk in chunks
+        if chunk.metadata["chunk_id"] == chunk_id
+    )
+
+    print("\n" + "=" * 80)
+    print("RANK:", rank)
+    print("Chunk:", chunk_id)
+    print("Page:", chunk.metadata.get("page"))
+    print(
+        "Vector Score:",
+        round(result["vector_score"], 4)
+    )
+    print(
+        "BM25 Score:",
+        round(result["bm25_score"], 4)
+    )
+    print(
+        "Hybrid Score:",
+        round(result["hybrid_score"], 4)
+    )
+
+    print("\nTEXT:")
+    print(chunk.page_content)
+
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+from app.ingestion.loader import load_pdf
+from app.ingestion.chunker import create_recursive_chunks
+from app.retrieval.retriever import retrieve_chunks
+from app.retrieval.bm25 import create_bm25_index, retrieve_bm25
+from app.retrieval.hybrid import hybrid_search
+
+
+query = (
+    "How does Retrieval-Augmented Generation "
+    "reduce hallucinations in large language models?"
+)
+
+# --------------------------------------------------
+# 1. Load document + create same baseline chunks
+# --------------------------------------------------
+
+documents = load_pdf("data/documents/rag_survey.pdf")
+chunks = create_recursive_chunks(documents)
+
+# Same metadata filter for BOTH retrievers
+filtered_chunks = [
+    chunk
+    for chunk in chunks
+    if 0 <= chunk.metadata.get("page", -1) <= 50
+]
+
+
+# --------------------------------------------------
+# 2. Vector retrieval — pages 0–50
+# --------------------------------------------------
+
+vector_results = retrieve_chunks(
+    query,
+    top_k=5,
+    page_min=0,
+    page_max=50,
+)
+
+
+# --------------------------------------------------
+# 3. BM25 — pages 0–50
+# --------------------------------------------------
+
+bm25 = create_bm25_index(filtered_chunks)
+
+bm25_results = retrieve_bm25(
+    bm25,
+    filtered_chunks,
+    query,
+    top_k=5,
+)
+
+
+# --------------------------------------------------
+# 4. Hybrid
+# --------------------------------------------------
+
+hybrid_results = hybrid_search(
+    vector_results=vector_results,
+    bm25_results=bm25_results,
+    top_k=5,
+    vector_weight=0.5,
+)
+
+
+# --------------------------------------------------
+# 5. Print Hybrid results
+# --------------------------------------------------
+
+print("\n" + "#" * 80)
+print("FAIR HYBRID RETRIEVAL — PAGES 0–50")
+print("#" * 80)
+
+for rank, result in enumerate(hybrid_results, start=1):
+
+    chunk_id = result["chunk_id"]
+
+    chunk = next(
+        chunk
+        for chunk in chunks
+        if chunk.metadata["chunk_id"] == chunk_id
+    )
+
+    print("\n" + "=" * 80)
+    print("RANK:", rank)
+    print("Chunk:", chunk_id)
+    print("Page:", chunk.metadata.get("page"))
+    print(
+        "Vector Score:",
+        round(result["vector_score"], 4)
+    )
+    print(
+        "BM25 Score:",
+        round(result["bm25_score"], 4)
+    )
+    print(
+        "Hybrid Score:",
+        round(result["hybrid_score"], 4)
+    )
+
+    print("\nTEXT:")
+    print(chunk.page_content)"""
+
+

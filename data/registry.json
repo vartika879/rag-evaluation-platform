@@ -1,0 +1,23 @@
+{
+  "collections": {
+    "rag_documents": {
+      "strategy": "recursive",
+      "chunk_size": 1000,
+      "chunk_overlap": 150,
+      "embedding_model": "embed-english-v3.0",
+      "embedding_dim": 1024,
+      "created_at": "2026-10-10T09:51:52",
+      "documents": {
+        "e1f208bba353": {
+          "source": "rag_survey.pdf",
+          "chunk_count": 234
+        }
+      },
+      "chunk_count": 234,
+      "updated_at": "2026-10-10T09:51:52"
+    }
+  },
+  "aliases": {
+    "default": "rag_documents"
+  }
+}

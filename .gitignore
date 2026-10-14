@@ -1,5 +1,40 @@
-.venv/
+# Secrets
 .env
+
+# Local data (generated)
+data/qdrant/
+data/registry.json
+data/traces/
+evaluation/runs/
+
+# Python
 __pycache__/
 *.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Evaluation artefacts that are regenerated or personal
+evaluation/judge_cache.jsonl
+evaluation/label_sheet*.csv
+# Qdrant local state
+app/data/qdrant/
 data/qdrant/
+*.lock
+meta.json
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.env
+
+# Notebooks
+.ipynb_checkpoints/
