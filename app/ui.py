@@ -380,8 +380,29 @@ def _pipeline_diagram():
 
 
 def _quick_stats():
+    # Try API first (works on cloud); fallback to local files
+    try:
+        r = requests.get(f"{API_URL}/api/stats/overview", timeout=10)
+        r.raise_for_status()
+        stats = r.json()
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            metric_card("Total Runs", stats.get("total_runs", 0), "evaluation runs")
+        with col2:
+            metric_card("Total Traces", stats.get("total_traces", 0), "queries processed")
+        with col3:
+            rate = stats.get("refusal_rate", 0)
+            metric_card("Refusal Rate", f"{rate * 100:.1f}%", "of all queries")
+        with col4:
+            metric_card("Avg Latency", f"{stats.get('avg_latency_ms', 0)} ms", "per query")
+        return
+    except Exception:
+        pass
+
+    # Fallback: local files
     runs = load_runs()
     traces = load_traces(limit=1000)
+    # ... existing code below
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         metric_card("Total Runs", len(runs), "evaluation runs")
