@@ -516,8 +516,97 @@ def _section_ask():
                     name = stage.get("name", "-")
                     status = stage.get("status", "ok")
                     latency = stage.get("latency_ms", 0)
+                    details = stage.get("details", {}) or {}
+                    error = stage.get("error")
+
                     icon = {"ok": "✅", "skipped": "⏭️", "fallback": "⚠️", "error": "❌"}.get(status, "•")
-                    st.markdown(f"{icon} **{name}** — {status} ({latency} ms)")
+
+                    # Show stage + optional expansion for its details
+                    if details or error:
+                        with st.expander(f"{icon} **{name}** — {status} ({latency} ms)", expanded=False):
+                            if error:
+                                st.error(f"Error: {error}")
+
+                            # ---- Special rendering per stage ----
+                            if name == "query_transform":
+                                if "hypothetical_document" in details:
+                                    st.markdown("**💭 Hypothetical passage (HyDE):**")
+                                    st.info(details["hypothetical_document"])
+                                    st.caption(f"embed_as={details.get('embed_as')}, query_weight={details.get('query_weight')}")
+                                if "queries" in details:
+                                    st.markdown("**🔀 Generated query variants:**")
+                                    for q in details["queries"]:
+                                        st.markdown(f"- {q}")
+                                if "added_terms" in details:
+                                    st.markdown(f"**📈 Added terms:** {', '.join(details['added_terms'])}")
+
+                            elif name == "rewrite":
+                                st.markdown(f"**Original:** {details.get('original', '-')}")
+                                st.markdown(f"**Rewritten:** {details.get('rewritten', '-')}")
+                                st.caption(f"changed={details.get('changed')}, history_turns={details.get('history_turns')}")
+
+                            elif name == "retrieve":
+                                st.markdown(f"**Method:** `{details.get('method', '-')}`")
+                                st.markdown(f"**Query mode:** `{details.get('query_mode', '-')}`")
+                                st.markdown(f"**Returned:** {details.get('returned', 0)} chunks")
+                                results = details.get("results", [])
+                                if results:
+                                    st.markdown("**Top chunks:**")
+                                    for r in results[:5]:
+                                        st.caption(
+                                            f"Rank {r.get('rank', '-')} — "
+                                            f"chunk {r.get('chunk_id')} "
+                                            f"(page {r.get('page_number', '?')}, score {r.get('score', 0):.3f})"
+                                        )
+
+                            elif name == "rerank":
+                                st.markdown(f"**Candidates:** {details.get('candidates', '-')}")
+                                st.markdown(f"**Kept:** {details.get('kept', '-')}")
+                                changes = details.get("changes", [])
+                                if changes:
+                                    st.markdown("**Rank changes (before → after):**")
+                                    for c in changes[:10]:
+                                        before = c.get("before", "-")
+                                        after = c.get("after", "-")
+                                        delta = c.get("change", 0)
+                                        arrow = "↑" if delta > 0 else ("↓" if delta < 0 else "=")
+                                        st.caption(
+                                            f"Chunk {c.get('chunk_id')} (page {c.get('page_number')}): "
+                                            f"{before} → {after} {arrow}"
+                                        )
+
+                            elif name == "crag":
+                                st.markdown(f"**Action:** `{details.get('action', '-')}`")
+                                st.markdown(f"**Strategy:** `{details.get('strategy', '-')}`")
+                                grades = details.get("grades", [])
+                                if grades:
+                                    st.markdown("**Grades:**")
+                                    for i, g in enumerate(grades, 1):
+                                        st.markdown(
+                                            f"Attempt {i}: **{g.get('verdict', '?')}** — "
+                                            f"{g.get('reason', 'no reason')}"
+                                        )
+
+                            elif name == "compress":
+                                st.markdown(f"**Original:** {details.get('original_chars', 0)} chars")
+                                st.markdown(f"**Compressed:** {details.get('compressed_chars', 0)} chars")
+                                st.markdown(f"**Ratio:** {details.get('ratio', 1.0):.2f}")
+
+                            elif name == "context":
+                                st.markdown(f"**Chunks:** {details.get('chunks', 0)}")
+                                st.markdown(f"**Chars:** {details.get('chars', 0)}")
+
+                            elif name == "generate":
+                                st.markdown(f"**Model:** `{details.get('model', '-')}`")
+                                st.markdown(f"**LLM called:** {details.get('llm_called', False)}")
+                                st.markdown(f"**Latency:** {details.get('llm_latency_ms', 0)} ms")
+                                st.markdown(f"**Refused:** {details.get('refused', False)}")
+
+                            else:
+                                # Fallback: dump raw details
+                                st.json(details)
+                    else:
+                        st.markdown(f"{icon} **{name}** — {status} ({latency} ms)")
 
                 st.markdown("---")
                 st.markdown("**📝 Context sent to LLM**")
@@ -527,6 +616,7 @@ def _section_ask():
                     label_visibility="collapsed",
                 )
 
+            
 
 # ---------- RETRIEVAL section ----------
 
