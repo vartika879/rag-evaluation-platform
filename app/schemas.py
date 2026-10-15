@@ -164,12 +164,14 @@ def assign_ranks(chunks: List[RetrievedChunk], stage: str) -> List[RetrievedChun
 # ---------------------------------------------------------------------------
 # API models (used by app/api.py)
 # ---------------------------------------------------------------------------
-
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=1)
     top_k: Optional[int] = Field(default=None, ge=1, le=50)
-
-
+    preset: Optional[str] = Field(
+        default=None,
+        description="Pipeline preset: vector, bm25, hybrid, hybrid_rerank, hyde, expand, multi_query, hybrid_rerank_crag",
+    )
+    
 class SourceItem(BaseModel):
     source: Optional[str] = None
     page: Optional[int] = None

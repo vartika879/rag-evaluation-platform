@@ -70,3 +70,6 @@ pytest-asyncio
 # HTTP / Utilities
 # ================================
 httpx
+
+
+plotly

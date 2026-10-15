@@ -131,6 +131,8 @@ def answer_question(
     config=None,
     chat_history=None,
     run_id=None,
+    preset=None,       
+    
 ) -> dict:
     """Answer one question with the configured pipeline.
  
@@ -143,7 +145,9 @@ def answer_question(
  
     if not question:
         raise ValueError("Question cannot be empty.")
- 
+    if preset is not None:
+        config = preset
+
     config = _with_top_k(
         resolve_config(config) if config is not None else _default_config(),
         top_k,
