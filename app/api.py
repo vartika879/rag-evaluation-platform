@@ -249,7 +249,64 @@ def api_chunking_compare(payload: ChunkingRequest):
         "num_pages_used": num_pages,
         "total_pages": len(documents),
         "results": results,
+
     }
+
+class EvalRunRequest(BaseModel):
+    preset: str = "vector"
+    limit: Optional[int] = None
+    use_judge: bool = True
+
+
+@api.post("/evaluation/run")
+def api_run_evaluation(payload: EvalRunRequest):
+    """Run an evaluation synchronously and return the run summary."""
+    from app.evaluation.runner import run_evaluation
+    from app.evaluation.dataset import load_dataset
+    from app.pipeline_config import get_preset
+
+    try:
+        config = get_preset(payload.preset)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+    dataset = load_dataset()
+    if payload.limit:
+        # Simple limit: take first N (keep proportion roughly)
+        dataset = dataset.filter(ids=[q.id for q in dataset][: payload.limit])
+
+    try:
+        run = run_evaluation(
+            config=config,
+            dataset=dataset,
+            use_judge=payload.use_judge,
+            check_collection=True,
+        )
+
+        summary = run.get("summary") or {}
+        e2e = summary.get("end_to_end") or {}
+        retrieval = summary.get("retrieval", {}).get("all", {})
+
+        return {
+            "status": "ok",
+            "run_id": run["run_id"],
+            "label": run.get("label"),
+            "questions": len(run.get("rows", [])),
+            "hit@5": retrieval.get("hit@5"),
+            "mrr": retrieval.get("mrr"),
+            "answerable_ok_rate": e2e.get("answerable_ok_rate"),
+            "unanswerable_ok_rate": e2e.get("unanswerable_ok_rate"),
+            "diagnosis": {
+                k: v["count"]
+                for k, v in (e2e.get("diagnosis") or {}).items()
+                if v["count"] > 0
+            },
+        }
+    except Exception as exc:
+        logger.exception("Evaluation failed")
+        raise HTTPException(500, f"Evaluation failed: {exc}") from exc
+
+    
 
 class IngestRequest(BaseModel):
     strategy: str = "recursive"

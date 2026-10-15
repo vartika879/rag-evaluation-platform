@@ -755,8 +755,63 @@ def _section_retrieval():
 
 def _eval_runs():
     runs = load_runs()
+
+    # ---- Run new evaluation (trigger) ----
+    with st.expander("⚡ Run new evaluation", expanded=False):
+        presets = [
+            "vector", "bm25", "hybrid", "hybrid_weighted",
+            "vector_rerank", "hybrid_rerank",
+            "hyde", "expand", "multi_query", "hybrid_rerank_crag",
+        ]
+        col1, col2, col3 = st.columns([2, 1, 1])
+        with col1:
+            preset = st.selectbox("Preset", options=presets, index=0, key="eval_preset")
+        with col2:
+            limit = st.selectbox(
+                "Questions",
+                options=[5, 10, 20, 60],
+                index=0,
+                key="eval_limit",
+            )
+        with col3:
+            use_judge = st.checkbox("LLM judge", value=False, key="eval_judge")
+
+        if st.button("▶️ Start Evaluation", type="primary", use_container_width=True, key="eval_start"):
+            with st.spinner(f"Running {limit} questions with {preset}... (this may take 5-30 min)"):
+                try:
+                    r = requests.post(
+                        f"{API_URL}/api/evaluation/run",
+                        json={"preset": preset, "limit": limit, "use_judge": use_judge},
+                        timeout=3600,
+                    )
+                    r.raise_for_status()
+                    result = r.json()
+
+                    st.success(f"✅ Run complete: `{result['run_id']}`")
+
+                    c1, c2, c3, c4 = st.columns(4)
+                    with c1:
+                        v = result.get("hit@5")
+                        metric_card("Hit@5", f"{v * 100:.0f}%" if v is not None else "-", "top 5")
+                    with c2:
+                        v = result.get("mrr")
+                        metric_card("MRR", f"{v:.2f}" if v is not None else "-", "rank")
+                    with c3:
+                        v = result.get("answerable_ok_rate")
+                        metric_card("Answerable OK", f"{v * 100:.0f}%" if v is not None else "-", "correct")
+                    with c4:
+                        v = result.get("unanswerable_ok_rate")
+                        metric_card("Refusal OK", f"{v * 100:.0f}%" if v is not None else "-", "refused")
+
+                    st.caption("Refresh the page to see this run in the dropdown below.")
+                except requests.exceptions.Timeout:
+                    st.error("Evaluation timed out (>1 hour). Try fewer questions.")
+                except Exception as e:
+                    st.error(f"Evaluation failed: {e}")
+
+    # ---- Existing run selector ----
     if not runs:
-        st.info("No evaluation runs yet. Run `python scripts/run_eval.py run --preset vector`.")
+        st.info("No evaluation runs yet. Run one above or from CLI.")
         return
 
     run_labels = {f"{r['run_id']} — {r.get('label', '?')} ({r.get('status', '?')})": r for r in runs}
@@ -768,6 +823,7 @@ def _eval_runs():
         st.warning("This run is not complete yet — no summary available.")
         return
 
+   
     e2e = summary.get("end_to_end") or {}
     retrieval = summary.get("retrieval", {}).get("all", {})
 
@@ -951,7 +1007,81 @@ def _section_collections():
         with st.expander(title):
             st.caption(c.get("text", "No text"))
 
+def _section_ingest():
+    st.markdown("**Ingest the bundled PDF or upload your own**")
+    st.caption("This will chunk, embed, and store in Qdrant.")
 
+    # Source
+    source = st.radio(
+        "Source",
+        ["Bundled PDF (rag_survey.pdf)", "Upload new"],
+        horizontal=True,
+        key="ingest_src",
+    )
+
+    uploaded_file = None
+    if source == "Upload new":
+        uploaded_file = st.file_uploader("Choose a PDF", type=["pdf"], key="ingest_file")
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        strategy = st.selectbox(
+            "Strategy",
+            options=["recursive", "fixed", "structure_aware"],
+            key="ingest_strategy",
+        )
+    with col2:
+        chunk_size = st.number_input("Chunk size", value=1000, min_value=100, max_value=5000, step=100, key="ingest_cs")
+    with col3:
+        chunk_overlap = st.number_input("Overlap", value=150, min_value=0, max_value=1000, step=50, key="ingest_co")
+
+    recreate = st.checkbox("Recreate collection (delete existing data)", value=False, key="ingest_recreate")
+
+    if st.button("⚡ Run Ingestion", type="primary", use_container_width=True, key="ingest_btn"):
+        if source == "Upload new" and not uploaded_file:
+            st.warning("Please upload a PDF first.")
+            return
+
+        # Only bundled for now
+        if source == "Upload new":
+            st.info("Upload support coming soon. Using bundled PDF for now.")
+
+        with st.spinner(f"Ingesting with {strategy} strategy..."):
+            try:
+                r = requests.post(
+                    f"{API_URL}/api/ingest",
+                    json={
+                        "strategy": strategy,
+                        "chunk_size": chunk_size,
+                        "chunk_overlap": chunk_overlap,
+                        "recreate": recreate,
+                    },
+                    timeout=600,
+                )
+                r.raise_for_status()
+                result = r.json()
+
+                st.success(f"✅ Ingestion complete!")
+                summary = result.get("summary", {})
+
+                c1, c2, c3, c4 = st.columns(4)
+                with c1:
+                    metric_card("Chunks", summary.get("chunks", 0), "stored")
+                with c2:
+                    metric_card("Pages", summary.get("pages", 0), "processed")
+                with c3:
+                    metric_card("Strategy", summary.get("strategy", "-"), "chunking")
+                with c4:
+                    metric_card("Collection", summary.get("collection", "-")[:20], "in Qdrant")
+
+                st.caption(
+                    f"Avg chunk: {summary.get('avg_chunk_chars', 0)} chars · "
+                    f"Min: {summary.get('min_chunk_chars', 0)} · "
+                    f"Max: {summary.get('max_chunk_chars', 0)}"
+                )
+                st.json(summary.get("timings", {}))
+            except Exception as e:
+                st.error(f"Ingestion failed: {e}")
 # ---------- ABOUT section ----------
 
 def _section_about():
@@ -1019,6 +1149,7 @@ def page_dashboard():
         "📊 Evaluation",
         "📋 Traces",
         "📦 Collections",
+        "📥 Ingest",
         "ℹ️ About",
     ])
     with tabs[0]:
@@ -1030,6 +1161,8 @@ def page_dashboard():
     with tabs[3]:
         _section_collections()
     with tabs[4]:
+        _section_ingest()
+    with tabs[5]:
         _section_about()
 
 
