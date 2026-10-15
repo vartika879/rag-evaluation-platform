@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: rag-eval-api
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: COHERE_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: DEFAULT_COLLECTION
+        value: rag_recursive_1000_150
+      - key: RAG_PRESET
+        value: hybrid_rerank
+      - key: TRACE_ENABLED
+        value: "true"
