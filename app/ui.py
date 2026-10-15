@@ -406,25 +406,6 @@ def _quick_stats():
         metric_card("Avg Latency", f"{avg_latency} ms", "per query")
     
 
-    # Fallback: local files
-    runs = load_runs()
-    traces = load_traces(limit=1000)
-    # ... existing code below
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        metric_card("Total Runs", len(runs), "evaluation runs")
-    with col2:
-        metric_card("Total Traces", len(traces), "queries processed")
-    with col3:
-        if not traces.empty and "refused" in traces:
-            metric_card("Refusal Rate", f"{traces['refused'].mean() * 100:.1f}%", "of all queries")
-        else:
-            metric_card("Refusal Rate", "n/a", "no data")
-    with col4:
-        if not traces.empty and "latency_ms" in traces:
-            metric_card("Avg Latency", f"{traces['latency_ms'].mean():.0f} ms", "per query")
-        else:
-            metric_card("Avg Latency", "n/a", "no data")
 
 
 # ---------- ASK section ----------
