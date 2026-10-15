@@ -885,13 +885,18 @@ def _eval_compare():
             val = (val or {}).get(key, {}) if isinstance(val, dict) else {}
         return val if isinstance(val, (int, float)) else None
 
-    metrics = [
-        ("Answerable OK", ["end_to_end", "answerable_ok_rate"], "%"),
-        ("Correct Refusal", ["end_to_end", "unanswerable_ok_rate"], "%"),
+    judged = run_a.get("settings", {}).get("judge") and run_b.get("settings", {}).get("judge")
+
+    metrics = []
+    if judged:
+        metrics += [
+            ("Answerable OK", ["end_to_end", "answerable_ok_rate"], "%"),
+            ("Correct Refusal", ["end_to_end", "unanswerable_ok_rate"], "%"),
+        ]
+    metrics += [
         ("Hit@5", ["retrieval", "all", "hit@5"], "%"),
         ("MRR", ["retrieval", "all", "mrr"], "num"),
     ]
-
     rows = []
     for name, path, fmt in metrics:
         a = get_metric(run_a, path)
