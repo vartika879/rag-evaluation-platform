@@ -5,7 +5,7 @@
 data/qdrant/
 data/registry.json
 data/traces/
-evaluation/runs/
+
 
 # Python
 __pycache__/
