@@ -48,7 +48,10 @@ TRACES_DIR = Path(_env_str("TRACES_DIR", str(DATA_DIR / "traces")))
 # Qdrant local database. Its internal meta.json lives inside this folder:
 # never edit that file by hand.
 QDRANT_PATH = Path(_env_str("QDRANT_PATH", str(DATA_DIR / "qdrant")))
- 
+
+# Cloud Qdrant (if set, overrides local path)
+QDRANT_URL = _env_str("QDRANT_URL", "")
+QDRANT_API_KEY = _env_str("QDRANT_API_KEY", "")
 # Our own collection registry (strategy -> collection, chunk counts, ...)
 REGISTRY_PATH = Path(_env_str("REGISTRY_PATH", str(DATA_DIR / "registry.json")))
  

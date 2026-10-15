@@ -14,11 +14,12 @@ from qdrant_client.models import (
     PointStruct,
     VectorParams,
 )
- 
 from app.config import (
     DEFAULT_COLLECTION,
     EMBEDDING_DIM,
+    QDRANT_API_KEY,
     QDRANT_PATH,
+    QDRANT_URL,
     UPSERT_BATCH_SIZE,
 )
  
@@ -31,9 +32,14 @@ VECTOR_SIZE = EMBEDDING_DIM
 # ---------------------------------------------------------------------------
 # The shared client
 # ---------------------------------------------------------------------------
- 
 @lru_cache(maxsize=1)
 def get_qdrant_client():
+    # Cloud mode: QDRANT_URL is set
+    if QDRANT_URL:
+        logger.info("Using Qdrant Cloud at %s", QDRANT_URL)
+        return QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=60)
+
+    # Local mode: file-based
     try:
         return QdrantClient(path=str(QDRANT_PATH))
     except RuntimeError as error:
@@ -44,7 +50,7 @@ def get_qdrant_client():
                 "terminal). Stop it, or call release_qdrant_client() there, "
                 "and try again."
             ) from error
- 
+
         raise
  
  

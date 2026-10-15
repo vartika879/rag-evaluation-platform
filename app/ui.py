@@ -9,6 +9,7 @@ Pages:
     Traces     — recent query log from SQLite
     About      — architecture & info
 """
+import os
 import json
 import sqlite3
 from pathlib import Path
@@ -28,7 +29,7 @@ EVAL_DIR = PROJECT_ROOT / "evaluation"
 RUNS_DIR = EVAL_DIR / "runs"
 REPORTS_DIR = EVAL_DIR / "reports"
 TRACES_DB = PROJECT_ROOT / "data" / "traces" / "traces.db"
-API_URL = "http://127.0.0.1:8000"
+API_URL = os.getenv("RAG_API_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(
     page_title="RAG Evaluation Platform",
@@ -1124,6 +1125,11 @@ def page_dashboard():
         "RAG Evaluation Platform",
         "Understand • Diagnose • Improve your retrieval-augmented generation pipeline",
         badge="🔬 v1.0",
+    )
+        # Demo mode banner
+    st.info(
+        "⚠️ **Demo instance** — shared across users. "
+        "Feel free to explore. Do not upload sensitive documents."
     )
 
     # Quick stats at top
