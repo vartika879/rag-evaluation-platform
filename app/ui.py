@@ -378,26 +378,33 @@ def _pipeline_diagram():
                 </div>
             """, unsafe_allow_html=True)
 
-
 def _quick_stats():
-    # Try API first (works on cloud); fallback to local files
+    # Runs: always from local files (works on Streamlit Cloud via git)
+    runs_count = len(load_runs())
+
+    # Traces + latency: from API
     try:
         r = requests.get(f"{API_URL}/api/stats/overview", timeout=10)
         r.raise_for_status()
         stats = r.json()
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            metric_card("Total Runs", stats.get("total_runs", 0), "evaluation runs")
-        with col2:
-            metric_card("Total Traces", stats.get("total_traces", 0), "queries processed")
-        with col3:
-            rate = stats.get("refusal_rate", 0)
-            metric_card("Refusal Rate", f"{rate * 100:.1f}%", "of all queries")
-        with col4:
-            metric_card("Avg Latency", f"{stats.get('avg_latency_ms', 0)} ms", "per query")
-        return
+        traces_count = stats.get("total_traces", 0)
+        refusal_rate = stats.get("refusal_rate", 0)
+        avg_latency = stats.get("avg_latency_ms", 0)
     except Exception:
-        pass
+        traces_count = 0
+        refusal_rate = 0
+        avg_latency = 0
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        metric_card("Total Runs", runs_count, "evaluation runs")
+    with col2:
+        metric_card("Total Traces", traces_count, "queries processed")
+    with col3:
+        metric_card("Refusal Rate", f"{refusal_rate * 100:.1f}%", "of all queries")
+    with col4:
+        metric_card("Avg Latency", f"{avg_latency} ms", "per query")
+    
 
     # Fallback: local files
     runs = load_runs()
