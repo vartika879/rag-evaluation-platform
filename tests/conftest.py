@@ -23,6 +23,7 @@ _TMP = Path(tempfile.mkdtemp(prefix="rag_tests_"))
 os.environ["QDRANT_PATH"] = str(_TMP / "qdrant")
 os.environ["REGISTRY_PATH"] = str(_TMP / "registry.json")
 os.environ["TRACES_DIR"] = str(_TMP / "traces")
+os.environ["API_ACCESS_TOKEN"] = "test-api-token"
 os.environ["COHERE_API_KEY"] = "test-key"
 os.environ["GROQ_API_KEY"] = "test-key"
 os.environ["JUDGE_MODEL"] = "test-judge-model"

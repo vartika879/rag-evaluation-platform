@@ -15,7 +15,7 @@ from app.config import (
     JUDGE_MODEL,
 )
 from app.evaluation.metrics import refusal_metrics
-from app.generation.llm import complete_text, create_llm, is_refusal
+from app.generation.llm import complete_text, create_judge_llm, is_refusal
  
 logger = logging.getLogger(__name__)
 
@@ -246,7 +246,7 @@ class Judge:
     @property
     def llm(self):
         if self._llm is None:
-            self._llm = create_llm(JUDGE_MODEL)
+            self._llm = create_judge_llm()
  
         return self._llm
  

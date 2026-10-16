@@ -58,11 +58,20 @@ DEFAULT_MATCH_THRESHOLD = 0.8
 DEFAULT_LOW_RANK = 3
 JUDGE_CACHE_PATH = EVAL_DIR / "judge_cache.jsonl"
 
-DIAGNOSES = (
-    "ok", "partial", "false_refusal", "retrieval_miss", "lost_before_llm",
-    "generation_error", "correct_refusal", "hallucination", "pipeline_error", "unjudged",
-)
 
+DIAGNOSES = (
+    "ok",
+    "partial",
+    "false_refusal",
+    "retrieval_miss",
+    "lost_before_llm",
+    "generation_error",
+    "correct_refusal",
+    "hallucination",
+    "pipeline_error",
+    "provider_rate_limit",
+    "unjudged",
+)
 
 class EvaluationSetupError(RuntimeError):
     """The evaluation cannot give trustworthy numbers (wrong PDF, run id clash...)."""
@@ -189,8 +198,27 @@ def compact_judgment(judged):
 
 
 def diagnose_row(row):
-    """Why did this question succeed or fail? One label from DIAGNOSES."""
-    if row.get("error") or row.get("action") == "error":
+    """Classify an evaluation row without mislabeling provider failures."""
+
+    error_text = str(row.get("error") or "").lower()
+    action = str(row.get("action") or "").lower()
+
+    # Provider quota/rate-limit failures are not retrieval failures.
+    rate_limit_indicators = (
+        "ratelimiterror",
+        "rate limit",
+        "rate_limit",
+        "tokens per day",
+        "token limit",
+        "too many requests",
+        "http 429",
+        "status code 429",
+    )
+
+    if any(term in error_text for term in rate_limit_indicators):
+        return "provider_rate_limit"
+
+    if row.get("error") or action == "error":
         return "pipeline_error"
 
     judge = row.get("judge")
@@ -217,12 +245,19 @@ def diagnose_row(row):
         return "unjudged"
 
     def evidence_found(result):
-        return bool(result) and all(rank is not None for rank in result["group_ranks"].values())
+        return bool(result) and all(
+            rank is not None
+            for rank in result["group_ranks"].values()
+        )
 
     if evidence_found(row.get("context")):
         return "generation_error"
 
-    return "lost_before_llm" if evidence_found(row.get("retrieval")) else "retrieval_miss"
+    return (
+        "lost_before_llm"
+        if evidence_found(row.get("retrieval"))
+        else "retrieval_miss"
+    )
 
 
 def _evaluate_question(question, config, run_id, store, judge, ks, threshold):
@@ -292,16 +327,25 @@ def _by_tag(rows, key):
 
     return {tag: M.aggregate(items) for tag, items in sorted(groups.items())}
 
+def summarize(
+    rows,
+    ks=EVAL_K_VALUES,
+    low_rank=DEFAULT_LOW_RANK,
+    unreachable_ids=(),
+    judge_enabled=None,
+):
+    """All numbers of a run, computed from the per-question rows."""
 
-def summarize(rows, ks=EVAL_K_VALUES, low_rank=DEFAULT_LOW_RANK, unreachable_ids=()):
-    """All numbers of a run, computed from the per-question rows (pure function)."""
+    if judge_enabled is None:
+        judge_enabled = any(r.get("judge") is not None for r in rows)
+
     answerable = [r for r in rows if r["expected"] == "answerable"]
     unanswerable = [r for r in rows if r["expected"] == "unanswerable"]
     retrieval_rows = [r["retrieval"] for r in rows if r["retrieval"]]
     context_rows = [r["context"] for r in rows if r["context"]]
     judged = [r["judge"] for r in rows if r["judge"]]
     unreachable = set(unreachable_ids)
-
+    
     by_action = {}
     for r in rows:
         by_action[r["action"] or "unknown"] = by_action.get(r["action"] or "unknown", 0) + 1
@@ -325,7 +369,12 @@ def summarize(rows, ks=EVAL_K_VALUES, low_rank=DEFAULT_LOW_RANK, unreachable_ids
         ci[f"retrieval.hit@{k}"] = M.mean_ci([r[f"hit@{k}"] for r in retrieval_rows])
         ci[f"retrieval.recall@{k}"] = M.mean_ci([r[f"recall@{k}"] for r in retrieval_rows])
     ci["retrieval.mrr"] = M.mean_ci([r["mrr"] for r in retrieval_rows])
-    ci["end_to_end.answerable_ok"] = M.mean_ci([1.0 if r["diagnosis"] == "ok" else 0.0 for r in answerable])
+    ci["end_to_end.answerable_ok"] = (
+        M.mean_ci([1.0 if r["diagnosis"] == "ok" else 0.0 for r in answerable]
+    )
+        if judge_enabled
+        else M.mean_ci([])
+)
     ci["end_to_end.unanswerable_ok"] = M.mean_ci(
         [1.0 if r["diagnosis"] == "correct_refusal" else 0.0 for r in unanswerable]
     )
@@ -352,6 +401,7 @@ def summarize(rows, ks=EVAL_K_VALUES, low_rank=DEFAULT_LOW_RANK, unreachable_ids
             "answerable": len(answerable),
             "unanswerable": len(unanswerable),
             "pipeline_errors": diagnosis["pipeline_error"]["count"],
+            "provider_rate_limits": diagnosis["provider_rate_limit"]["count"],
             "retrieval_unavailable": sum(1 for r in rows if r["retrieval_unavailable"]),
             "by_action": by_action,
         },
@@ -369,7 +419,7 @@ def summarize(rows, ks=EVAL_K_VALUES, low_rank=DEFAULT_LOW_RANK, unreachable_ids
         },
         "answer": aggregate_judgments(judged) if judged else None,
         "end_to_end": {
-            "answerable_ok_rate": ok / len(answerable) if answerable else None,
+            "answerable_ok_rate": ok / len(answerable) if judge_enabled and answerable else None,
             "unanswerable_ok_rate": refused_ok / len(unanswerable) if unanswerable else None,
             "diagnosis": diagnosis,
         },
@@ -543,7 +593,13 @@ def run_evaluation(
         raise
 
     run["rows"].sort(key=lambda r: r["question_id"])
-    run["summary"] = summarize(run["rows"], ks, low_rank, unreachable)
+    run["summary"] = summarize(
+    run["rows"],
+    ks,
+    low_rank,
+    unreachable,
+    judge_enabled=judge is not None,
+)
     run["status"] = "complete"
     run["finished_at"] = _now()
     _write_json(path, run)

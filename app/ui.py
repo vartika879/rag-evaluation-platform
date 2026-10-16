@@ -20,16 +20,20 @@ import plotly.express as px
 import plotly.graph_objects as go
 import requests
 import streamlit as st
+from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
 # Paths & config
 # ---------------------------------------------------------------------------
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
 EVAL_DIR = PROJECT_ROOT / "evaluation"
 RUNS_DIR = EVAL_DIR / "runs"
 REPORTS_DIR = EVAL_DIR / "reports"
 TRACES_DB = PROJECT_ROOT / "data" / "traces" / "traces.db"
-API_URL = os.getenv("RAG_API_URL", "http://127.0.0.1:8000")
+API_URL = os.getenv("RAG_API_URL", "http://127.0.0.1:8000").rstrip("/")
+API_TOKEN = os.getenv("RAG_API_TOKEN", os.getenv("API_ACCESS_TOKEN", "")).strip()
+API_HEADERS = {"X-API-Key": API_TOKEN} if API_TOKEN else {}
 
 st.set_page_config(
     page_title="RAG Evaluation Platform",
@@ -332,6 +336,7 @@ def call_api(question, top_k, preset=None):
         r = requests.post(
             f"{API_URL}/ask",
             json=payload,
+            headers=API_HEADERS,
             timeout=180,
         )
         r.raise_for_status()
@@ -384,7 +389,7 @@ def _quick_stats():
 
     # Traces + latency: from API
     try:
-        r = requests.get(f"{API_URL}/api/stats/overview", timeout=10)
+        r = requests.get(f"{API_URL}/api/stats/overview", headers=API_HEADERS, timeout=10)
         r.raise_for_status()
         stats = r.json()
         traces_count = stats.get("total_traces", 0)
@@ -413,36 +418,22 @@ def _section_ask():
     st.markdown('<div class="section-title">💬 Ask the Documents</div>', unsafe_allow_html=True)
 
     # Preset selector (full width)
-    presets = [
-        "vector",              # baseline vector search
-        "bm25",                # keyword only
-        "hybrid",              # vector + BM25 (RRF)
-        "hybrid_weighted",     # vector + BM25 (weighted)
-        "vector_rerank",       # vector + Cohere rerank
-        "hybrid_rerank",       # hybrid + rerank (recommended)
-        "hyde",                # hypothetical document embeddings
-        "expand",              # query expansion
-        "multi_query",         # multi-query fusion
-        "hybrid_rerank_crag",  # hybrid + rerank + corrective RAG
-    ]
+    # Keep the everyday workflow focused on three interpretable baselines.
+    # Advanced strategies remain implemented in the backend, but are not
+    # presented as standard choices until their results are benchmarked.
+    presets = ["vector", "bm25", "hybrid", "hybrid_rerank"]
 
     preset_labels = {
-        "vector": "🎯 Vector (baseline)",
-        "bm25": "🔤 BM25 (keyword)",
-        "hybrid": "🔀 Hybrid (RRF)",
-        "hybrid_weighted": "⚖️ Hybrid (weighted)",
-        "vector_rerank": "🎯 Vector + Rerank",
-        "hybrid_rerank": "⭐ Hybrid + Rerank",
-        "hyde": "💭 HyDE",
-        "expand": "📈 Query Expansion",
-        "multi_query": "🔀 Multi-Query",
-        "hybrid_rerank_crag": "🔬 Hybrid + Rerank + CRAG",
+        "vector": "Vector (baseline)",
+        "bm25": "BM25 (keyword search)",
+        "hybrid": "Hybrid (vector + BM25)",
+        "hybrid_rerank": "Hybrid + Reranking",
     }
 
     preset = st.selectbox(
         "Pipeline preset",
         options=presets,
-        index=5,  # default to hybrid_rerank
+        index=3,  # default to hybrid_rerank
         format_func=lambda x: preset_labels.get(x, x),
         key="ask_preset",
     )
@@ -460,7 +451,7 @@ def _section_ask():
         )
     with col2:
         top_k = st.select_slider("Top-K", options=[1, 3, 5, 8, 10, 15, 20], value=5, key="ask_k")
-        run_btn = st.button("🚀 Run Query", use_container_width=True, type="primary", key="ask_btn")
+        run_btn = st.button("🚀 Run Query", width="stretch", type="primary", key="ask_btn")
 
     if run_btn:
         if not question.strip():
@@ -505,7 +496,7 @@ def _section_ask():
                 "Page": s.get("page", "-"),
                 "Score": f"{s.get('score', 0):.4f}" if s.get("score") is not None else "-",
             } for s in sources])
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.dataframe(df, width="stretch", hide_index=True)
         else:
             st.caption("No sources retrieved.")
 
@@ -514,7 +505,7 @@ def _section_ask():
     if trace_id:
         with st.expander("🔬 Pipeline stage breakdown"):
             try:
-                r = requests.get(f"{API_URL}/api/traces/{trace_id}", timeout=10)
+                r = requests.get(f"{API_URL}/api/traces/{trace_id}", headers=API_HEADERS, timeout=10)
                 r.raise_for_status()
                 trace = r.json()
             except Exception as e:
@@ -644,7 +635,7 @@ def _ret_methods():
         key="ret_methods",
     )
 
-    if st.button("🔍 Compare Retrieval", type="primary", use_container_width=True, key="ret_btn"):
+    if st.button("🔍 Compare Retrieval", type="primary", width="stretch", key="ret_btn"):
         if not query.strip():
             st.warning("Please enter a query.")
         elif not methods:
@@ -656,7 +647,7 @@ def _ret_methods():
                         "query": query.strip(),
                         "methods": methods,
                         "top_k": top_k,
-                    }, timeout=60)
+                    }, headers=API_HEADERS, timeout=60)
                     r.raise_for_status()
                     st.session_state["last_retrieval"] = r.json()
                 except Exception as e:
@@ -681,7 +672,7 @@ def _ret_methods():
                 row[m] = "✓" if cid in chunk_sets[m] else ""
             overlap_rows.append(row)
         st.caption(f"**{len(all_ids)}** unique chunks across methods")
-        st.dataframe(pd.DataFrame(overlap_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(overlap_rows), width="stretch", hide_index=True)
 
     valid = [m for m in results if isinstance(results[m], list)]
     if valid:
@@ -696,7 +687,7 @@ def _ret_methods():
                     "Score": f"{c['score']:.4f}" if c.get("score") is not None else "-",
                     "Preview": (c.get("text", "")[:100] + "...") if c.get("text") else "",
                 } for c in chunks])
-                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.dataframe(df, width="stretch", hide_index=True)
 
 
 def _ret_chunking():
@@ -711,7 +702,7 @@ def _ret_chunking():
     with col2:
         num_pages = st.slider("Pages", 5, 30, 10, key="chunk_pages")
 
-    if st.button("✂️ Run Chunking Comparison", type="primary", use_container_width=True, key="chunk_btn"):
+    if st.button("✂️ Run Chunking Comparison", type="primary", width="stretch", key="chunk_btn"):
         if not strategies:
             st.warning("Select at least one strategy.")
         else:
@@ -720,7 +711,7 @@ def _ret_chunking():
                     r = requests.post(f"{API_URL}/api/chunking/compare", json={
                         "num_pages": num_pages,
                         "strategies": strategies,
-                    }, timeout=120)
+                    }, headers=API_HEADERS, timeout=120)
                     r.raise_for_status()
                     st.session_state["last_chunking"] = r.json()
                 except Exception as e:
@@ -742,7 +733,7 @@ def _ret_chunking():
             "Min": info["min_chars"],
             "Max": info["max_chars"],
         } for name, info in valid.items()]
-        st.dataframe(pd.DataFrame(summary), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(summary), width="stretch", hide_index=True)
 
         tabs = st.tabs([k.replace("_", " ").title() for k in valid])
         for tab, (name, info) in zip(tabs, valid.items()):
@@ -768,11 +759,7 @@ def _eval_runs():
 
     # ---- Run new evaluation (trigger) ----
     with st.expander("⚡ Run new evaluation", expanded=False):
-        presets = [
-            "vector", "bm25", "hybrid", "hybrid_weighted",
-            "vector_rerank", "hybrid_rerank",
-            "hyde", "expand", "multi_query", "hybrid_rerank_crag",
-        ]
+        presets = ["vector", "bm25", "hybrid", "hybrid_rerank"]
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
             preset = st.selectbox("Preset", options=presets, index=0, key="eval_preset")
@@ -786,12 +773,13 @@ def _eval_runs():
         with col3:
             use_judge = st.checkbox("LLM judge", value=False, key="eval_judge")
 
-        if st.button("▶️ Start Evaluation", type="primary", use_container_width=True, key="eval_start"):
+        if st.button("▶️ Start Evaluation", type="primary", width="stretch", key="eval_start"):
             with st.spinner(f"Running {limit} questions with {preset}... (this may take 5-30 min)"):
                 try:
                     r = requests.post(
                         f"{API_URL}/api/evaluation/run",
                         json={"preset": preset, "limit": limit, "use_judge": use_judge},
+                        headers=API_HEADERS,
                         timeout=3600,
                     )
                     r.raise_for_status()
@@ -865,7 +853,7 @@ def _eval_runs():
                       margin=dict(l=20, r=20, t=20, b=20),
                       yaxis=dict(range=[0, 1.05], gridcolor="#F3F4F6"),
                       xaxis=dict(gridcolor="#F3F4F6"))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def _eval_compare():
@@ -920,7 +908,7 @@ def _eval_compare():
             delta = f"{b - a:+.3f}" if a is not None and b is not None else "-"
         rows.append({"Metric": name, "A": a_str, "B": b_str, "Δ (B-A)": delta})
 
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
 
 
 def _section_evaluation():
@@ -932,6 +920,24 @@ def _section_evaluation():
 
 
 # ---------- TRACES section ----------
+
+def _fetch_trace_detail(trace_id):
+    """Fetch the complete trace payload from the API."""
+    try:
+        response = requests.get(
+            f"{API_URL}/api/traces/{trace_id}",
+            headers=API_HEADERS,
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json(), None
+    except requests.exceptions.HTTPError as exc:
+        status = exc.response.status_code if exc.response is not None else "unknown"
+        detail = exc.response.text[:300] if exc.response is not None else str(exc)
+        return None, f"Trace detail request failed ({status}): {detail}"
+    except requests.exceptions.RequestException as exc:
+        return None, f"Could not load trace details: {exc}"
+
 
 def _section_traces():
     traces = load_traces(limit=500)
@@ -958,14 +964,125 @@ def _section_traces():
     if search:
         filtered = filtered[filtered["question"].str.contains(search, case=False, na=False)]
 
-    st.caption(f"**{len(filtered)}** traces")
+    st.caption(f"**{len(filtered)}** traces — select a row to inspect its stages and evidence.")
+    if filtered.empty:
+        st.info("No traces match these filters.")
+        return
 
-    display = filtered[["created_at", "question", "action", "refused", "latency_ms", "total_tokens"]].copy()
-    display["created_at"] = display["created_at"].str[:19]
-    display["question"] = display["question"].str[:60] + "..."
-    display["refused"] = display["refused"].map({0: "No", 1: "Yes"})
-    display.columns = ["Time", "Question", "Action", "Refused", "Latency", "Tokens"]
-    st.dataframe(display, use_container_width=True, hide_index=True)
+    display = filtered[[
+        "trace_id", "created_at", "question", "action", "refused",
+        "failed_stage", "latency_ms", "total_tokens"
+    ]].copy().reset_index(drop=True)
+    display["created_at"] = display["created_at"].astype(str).str[:19]
+    display["question"] = display["question"].fillna("").astype(str).apply(
+        lambda value: value if len(value) <= 80 else value[:77] + "..."
+    )
+    display["refused"] = display["refused"].map({0: "No", 1: "Yes"}).fillna("Unknown")
+    display["failed_stage"] = display["failed_stage"].fillna("—")
+    display.columns = ["Trace ID", "Time", "Question", "Status", "Refused", "Failed stage", "Latency (ms)", "Tokens"]
+
+    # Streamlit's dataframe selection returns selected row positions in the displayed table.
+    table_event = st.dataframe(
+        display,
+        width="stretch",
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="single-row",
+        key="trace_table_selection",
+    )
+
+    selected_rows = table_event.selection.rows if table_event and hasattr(table_event, "selection") else []
+    if not selected_rows:
+        st.info("Click a trace row above to open its debugging details.")
+        return
+
+    selected_index = selected_rows[0]
+    if selected_index < 0 or selected_index >= len(filtered):
+        st.info("Select a trace row to inspect its details.")
+        return
+
+    trace_id = str(filtered.iloc[selected_index]["trace_id"])
+    st.markdown("---")
+    st.subheader("Trace Details")
+    st.caption(f"Trace ID: `{trace_id}`")
+    with st.spinner("Loading trace details..."):
+        detail, error = _fetch_trace_detail(trace_id)
+
+    if error:
+        st.error(error)
+        st.caption("The trace row is available, but the API could not return its full payload.")
+        return
+    if not isinstance(detail, dict):
+        st.warning("The API returned an unexpected trace format.")
+        return
+
+    meta1, meta2, meta3, meta4 = st.columns(4)
+    meta1.metric("Status", detail.get("action") or "Unknown")
+    meta2.metric("Latency", f"{detail.get('total_latency_ms', 0)} ms")
+    meta3.metric("LLM calls", (detail.get("usage") or {}).get("llm_calls", 0))
+    meta4.metric("Tokens", (detail.get("usage") or {}).get("total_tokens", 0))
+
+    st.markdown("**Question**")
+    st.write(detail.get("question") or "No question stored.")
+
+    if detail.get("error"):
+        st.error(f"Trace error: {detail['error']}")
+
+    stages = detail.get("stages") or []
+    st.markdown("**Pipeline stages**")
+    if not stages:
+        st.info("No stage-level details were recorded for this trace.")
+    else:
+        stage_rows = []
+        for stage in stages:
+            stage_rows.append({
+                "Stage": stage.get("name", "unknown"),
+                "Status": stage.get("status", "unknown"),
+                "Latency (ms)": stage.get("latency_ms", 0),
+                "Error": stage.get("error") or "—",
+            })
+        st.dataframe(pd.DataFrame(stage_rows), width="stretch", hide_index=True)
+        for number, stage in enumerate(stages, start=1):
+            stage_name = stage.get("name", f"Stage {number}")
+            stage_status = stage.get("status", "unknown")
+            with st.expander(f"{number}. {stage_name} — {stage_status}"):
+                if stage.get("error"):
+                    st.error(stage["error"])
+                st.json(stage.get("details") or {})
+
+    chunks = detail.get("final_chunks") or []
+    with st.expander(f"Retrieved chunks ({len(chunks)})", expanded=bool(chunks)):
+        if chunks:
+            for number, chunk in enumerate(chunks, start=1):
+                source = chunk.get("source") or chunk.get("source_file") or chunk.get("metadata", {}).get("source") or "Unknown source"
+                score = chunk.get("score")
+                heading = f"Chunk {number} · {source}"
+                if score is not None:
+                    heading += f" · score {score}"
+                with st.expander(heading):
+                    st.write(chunk.get("text") or chunk.get("page_content") or "No chunk text stored.")
+                    metadata = {k: v for k, v in chunk.items() if k not in {"text", "page_content", "vector"}}
+                    if metadata:
+                        st.json(metadata)
+        else:
+            st.info("No retrieved chunks were stored in this trace.")
+
+    with st.expander("Retrieved context", expanded=False):
+        st.text(detail.get("context") or "No context stored.")
+    with st.expander("Prompt sent to the LLM", expanded=False):
+        st.text(detail.get("prompt") or "No prompt stored.")
+    with st.expander("Final answer", expanded=True):
+        st.write(detail.get("answer") or "No final answer stored.")
+    with st.expander("Configuration and usage metadata", expanded=False):
+        st.json({
+            "created_at": detail.get("created_at"),
+            "config_label": detail.get("config_label"),
+            "config": detail.get("config"),
+            "refused": detail.get("refused"),
+            "usage": detail.get("usage"),
+            "total_latency_ms": detail.get("total_latency_ms"),
+            "run_id": filtered.iloc[selected_index].get("run_id"),
+        })
 
 
 # ---------- COLLECTIONS section ----------
@@ -973,7 +1090,7 @@ def _section_traces():
 @st.cache_data(ttl=30)
 def _fetch_collections():
     try:
-        r = requests.get(f"{API_URL}/api/collections", timeout=10)
+        r = requests.get(f"{API_URL}/api/collections", headers=API_HEADERS, timeout=10)
         r.raise_for_status()
         return r.json().get("collections", [])
     except Exception:
@@ -994,7 +1111,7 @@ def _section_collections():
         "Overlap": c.get("chunk_overlap", "-"),
         "Model": c.get("embedding_model", "-"),
     } for c in collections])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
     st.markdown("---")
     col1, col2 = st.columns([3, 1])
@@ -1007,6 +1124,7 @@ def _section_collections():
         r = requests.get(
             f"{API_URL}/api/collections/{selected}/chunks",
             params={"limit": limit, "offset": 0},
+            headers=API_HEADERS,
             timeout=15,
         )
         r.raise_for_status()
@@ -1023,20 +1141,8 @@ def _section_collections():
             st.caption(c.get("text", "No text"))
 
 def _section_ingest():
-    st.markdown("**Ingest the bundled PDF or upload your own**")
-    st.caption("This will chunk, embed, and store in Qdrant.")
-
-    # Source
-    source = st.radio(
-        "Source",
-        ["Bundled PDF (rag_survey.pdf)", "Upload new"],
-        horizontal=True,
-        key="ingest_src",
-    )
-
-    uploaded_file = None
-    if source == "Upload new":
-        uploaded_file = st.file_uploader("Choose a PDF", type=["pdf"], key="ingest_file")
+    st.markdown("**Ingest the bundled evaluation document**")
+    st.caption("This currently processes the bundled `rag_survey.pdf`, then chunks, embeds, and stores it in Qdrant. Custom PDF upload is not implemented yet.")
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -1046,21 +1152,13 @@ def _section_ingest():
             key="ingest_strategy",
         )
     with col2:
-        chunk_size = st.number_input("Chunk size", value=1000, min_value=100, max_value=5000, step=100, key="ingest_cs")
+        chunk_size = st.number_input("Chunk size", value=1000, min_value=100, max_value=3000, step=100, key="ingest_cs")
     with col3:
-        chunk_overlap = st.number_input("Overlap", value=150, min_value=0, max_value=1000, step=50, key="ingest_co")
+        chunk_overlap = st.number_input("Overlap", value=150, min_value=0, max_value=500, step=50, key="ingest_co")
 
     recreate = st.checkbox("Recreate collection (delete existing data)", value=False, key="ingest_recreate")
 
-    if st.button("⚡ Run Ingestion", type="primary", use_container_width=True, key="ingest_btn"):
-        if source == "Upload new" and not uploaded_file:
-            st.warning("Please upload a PDF first.")
-            return
-
-        # Only bundled for now
-        if source == "Upload new":
-            st.info("Upload support coming soon. Using bundled PDF for now.")
-
+    if st.button("⚡ Run Ingestion", type="primary", width="stretch", key="ingest_btn"):
         with st.spinner(f"Ingesting with {strategy} strategy..."):
             try:
                 r = requests.post(
@@ -1071,6 +1169,7 @@ def _section_ingest():
                         "chunk_overlap": chunk_overlap,
                         "recreate": recreate,
                     },
+                    headers=API_HEADERS,
                     timeout=600,
                 )
                 r.raise_for_status()
@@ -1127,88 +1226,110 @@ A production-grade RAG evaluation and debugging system that:
         {"Layer": "BM25", "Technology": "rank-bm25"},
         {"Layer": "Tracing", "Technology": "SQLite + WAL"},
         {"Layer": "Evaluation", "Technology": "Custom (bootstrap CI, paired tests)"},
-    ]), use_container_width=True, hide_index=True)
+    ]), width="stretch", hide_index=True)
 
 
 # ===========================================================================
-# The one page
+# Page layout and navigation
 # ===========================================================================
-
-def page_dashboard():
+def page_overview():
     hero(
         "RAG Evaluation Platform",
-        "Understand • Diagnose • Improve your retrieval-augmented generation pipeline",
-        badge="🔬 v1.0",
+        "Measure retrieval quality, inspect answers, and diagnose failures.",
+        badge="RAG QUALITY WORKBENCH",
     )
-        # Demo mode banner
-    st.info(
-        "⚠️ **Demo instance** — shared across users. "
-        "Feel free to explore. Do not upload sensitive documents."
-    )
-
-    # Quick stats at top
+    st.caption("A practical workspace for comparing retrieval strategies and tracing RAG behavior.")
     _quick_stats()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Pipeline diagram
-    st.markdown('<div class="section-title">🏗️ Pipeline Architecture</div>', unsafe_allow_html=True)
+    st.markdown("### Pipeline at a glance")
     _pipeline_diagram()
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("### Recommended workflow")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("**1 · Ask**")
+        st.caption("Try a question and inspect its sources and trace.")
+    with col2:
+        st.markdown("**2 · Compare**")
+        st.caption("Run Vector, Hybrid, and Hybrid + Reranking on the same questions.")
+    with col3:
+        st.markdown("**3 · Diagnose**")
+        st.caption("Review metrics and failed stages before drawing conclusions.")
 
-    # Ask section — primary interaction
-    _section_ask()
+    runs = load_runs()
+    if runs:
+        st.markdown("### Recent evaluation runs")
+        rows = []
+        for run in runs[:8]:
+            summary = run.get("summary") or {}
+            retrieval = (summary.get("retrieval") or {}).get("all") or {}
+            e2e = summary.get("end_to_end") or {}
 
-    st.markdown("<hr>", unsafe_allow_html=True)
+            hit5 = retrieval.get("hit@5")
+            ans_ok = e2e.get("answerable_ok_rate")
+            judge_used = (run.get("settings") or {}).get("judge")
 
-    # Bottom tabs — all deep-dive features
-    st.markdown('<div class="section-title">🔬 Deep Dive</div>', unsafe_allow_html=True)
-    tabs = st.tabs([
-        "🔍 Retrieval",
-        "📊 Evaluation",
-        "📋 Traces",
-        "📦 Collections",
-        "📥 Ingest",
-        "ℹ️ About",
-    ])
-    with tabs[0]:
-        _section_retrieval()
-    with tabs[1]:
-        _section_evaluation()
-    with tabs[2]:
-        _section_traces()
-    with tabs[3]:
-        _section_collections()
-    with tabs[4]:
-        _section_ingest()
-    with tabs[5]:
-        _section_about()
-
-
-# ===========================================================================
-# Sidebar + main
-# ===========================================================================
+            rows.append({
+                "Run": run.get("run_id", "-"),
+                "Preset": run.get("label", "-"),
+                "Status": run.get("status", "-"),
+                "Questions": len(run.get("rows", [])),
+                "Hit@5": f"{hit5 * 100:.0f}%" if hit5 is not None else "-",
+                "Answerable OK": (
+                    f"{ans_ok * 100:.0f}%" if ans_ok is not None and judge_used else "-"
+                ),
+            })
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
+    else:
+        st.info("No evaluation runs found yet. Open Evaluation to run a small baseline experiment.")
 
 with st.sidebar:
     st.markdown("""
-        <div style="padding: 1rem 0.5rem 1.5rem;">
-            <h2 style="color: white; margin: 0; font-size: 1.25rem;">🔬 RAG Platform</h2>
+        <div style="padding: 1rem 0.5rem 1rem;">
+            <h2 style="color: white; margin: 0; font-size: 1.25rem;">RAG Platform</h2>
             <p style="color: #9CA3AF; margin: 0.25rem 0 0; font-size: 0.8rem;">
                 Evaluation & Debugging
             </p>
         </div>
     """, unsafe_allow_html=True)
-
     st.markdown("---")
-
     if api_status():
-        st.markdown('<div style="color: #10B981; font-weight: 600;">● API connected</div>', unsafe_allow_html=True)
+        st.markdown('<div style="color: #10B981; font-weight: 600;">● API reachable</div>', unsafe_allow_html=True)
     else:
         st.markdown('<div style="color: #EF4444; font-weight: 600;">● API offline</div>', unsafe_allow_html=True)
-        st.caption("Start with `uvicorn app.api:app --port 8000`")
-
+        st.caption("Start backend: `uvicorn app.api:app --reload --port 8000`")
+    if not API_TOKEN:
+        st.warning("API token missing. Set RAG_API_TOKEN in .env or the UI service environment.")
     st.markdown("---")
-    st.caption("v1.0 · Made with ❤️")
+    page = st.radio(
+        "Workspace",
+        options=["Overview", "Ask Documents", "Experiments", "Evaluation", "Debug Traces", "Documents", "About"],
+        index=0,
+        key="main_navigation",
+    )
+    st.caption("Use the pages to keep each workflow focused.")
 
-page_dashboard()
+if page == "Overview":
+    page_overview()
+elif page == "Ask Documents":
+    hero("Ask Documents", "Ask a question and inspect the retrieved evidence.")
+    _section_ask()
+elif page == "Experiments":
+    hero("Retrieval Experiments", "Compare retrieval methods and chunking strategies.")
+    _section_retrieval()
+elif page == "Evaluation":
+    hero("Evaluation", "Run repeatable evaluations and compare completed runs.")
+    _section_evaluation()
+elif page == "Debug Traces":
+    hero("Debug Traces", "Inspect requests and find where the RAG pipeline failed.")
+    _section_traces()
+elif page == "Documents":
+    hero("Document Store", "Inspect collections or ingest the bundled evaluation document.")
+    tab_collections, tab_ingest = st.tabs(["Collections & Chunks", "Ingestion"])
+    with tab_collections:
+        _section_collections()
+    with tab_ingest:
+        _section_ingest()
+elif page == "About":
+    hero("About this project", "Architecture, components, and evaluation scope.")
+    _section_about()

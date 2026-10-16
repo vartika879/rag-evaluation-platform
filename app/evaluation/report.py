@@ -24,6 +24,9 @@ ADVICE = {
     "hallucination": "unanswerable questions got an answer: make the refusal rule stricter, or add CRAG / a score gate",
     "false_refusal": "answerable questions were refused: the refusal rule or the retrieved context may be too strict",
     "pipeline_error": "the pipeline crashed: open these traces in the TraceStore and look at the failed stage",
+    "provider_rate_limit": (
+    "check provider quota and retry limits, then rerun the affected questions"
+),
 }
 
 DIAGNOSIS_TEXT = {
@@ -37,6 +40,7 @@ DIAGNOSIS_TEXT = {
     "hallucination": "answered an unanswerable question",
     "pipeline_error": "pipeline crashed",
     "unjudged": "no judge verdict",
+    "provider_rate_limit": "provider quota or rate limit prevented evaluation",
 }
 
 
@@ -220,6 +224,11 @@ def render_run_report(run):
                      "so no retriever can score on them.")
     if counts["pipeline_errors"]:
         notes.append(f"{counts['pipeline_errors']} questions crashed. They count as failures (as retrieval misses if the crash was before retrieval), never as missing data.")
+    if counts.get("provider_rate_limits", 0):
+        notes.append(
+           f"{counts['provider_rate_limits']} questions failed due to provider "
+           "rate limits. Their answers were not successfully evaluated."
+    )
     if run["settings"]["judge"]:
         notes.append("Judge verdicts are opinions of an LLM. Calibrate the judge against hand labels (`make_label_sheet`, `calibrate`) before trusting small differences.")
     out += ["", "## Caveats", ""] + [f"- {n}" for n in notes]

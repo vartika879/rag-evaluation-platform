@@ -1,0 +1,83 @@
+# Evaluation report: run_test  (hybrid_rerank)
+
+Created 2026-10-16T04:33:54+00:00, status **complete**. Dataset: 5 questions for document `e1f208bba353`, 0 reviewed by a human.
+
+## Configuration
+
+`hybrid_rerank` (fingerprint `479d105a`). Settings that differ from the baseline (plain vector search):
+
+| setting | value |
+|---|---|
+| retrieval_method | hybrid |
+| use_reranker | True |
+
+Evaluation settings: k = [1, 3, 5, 10], evidence match threshold 0.8, retrieval depth 10, LLM judge `openai/gpt-oss-120b`.
+
+## Headline
+
+- Answerable questions answered correctly (end to end): **75% (95% CI 25% to 100%, n=4)**
+- Unanswerable questions correctly refused: **100% (95% CI 100% to 100%, n=1)**
+- Evidence retrieved within the top 10 (Hit@10): **75% (95% CI 25% to 100%, n=4)**
+- Evidence found at rank 1 (Hit@1): 50% (95% CI 0% to 100%, n=4)
+- MRR: 0.56
+
+## Retrieval (what the retrieve stage returned)
+
+| k | Hit@k | Recall@k | All groups@k | nDCG@k | Precision@k |
+|---|---|---|---|---|---|
+| 1 | 50% | 50% | 50% | 0.50 | 0.50 |
+| 3 | 50% | 50% | 50% | 0.50 | 0.17 |
+| 5 | 75% | 75% | 75% | 0.60 | 0.15 |
+| 10 | 75% | 75% | 75% | 0.60 | 0.10 |
+
+MRR 0.56. Based on 4 answerable questions. (Precision is naturally low here: each question has only one or two relevant chunks.)
+
+Where the evidence ended up:
+
+| outcome | questions | which |
+|---|---|---|
+| found in the top 3 | 2 |  |
+| found, but below rank 3 | 2 | Q2, Q4 |
+| only some of the facts found | 0 | - |
+| not found at all | 0 | - |
+
+## Evidence reaching the LLM
+
+All the evidence was retrieved for 4 of 4 answerable questions, and was inside the context the LLM received for 4 of 4.
+
+## Answer quality (LLM judge)
+
+| measure | value |
+|---|---|
+| faithfulness (mean score) | 1.00 |
+| faithfulness pass rate | 100% |
+| judged CORRECT | 75% |
+| judged PARTIAL | 25% |
+| judged INCORRECT | 0% |
+| correct refusal rate (unanswerable) | 100% |
+| hallucination rate (unanswerable answered) | 0% |
+| false refusal rate (answerable refused) | 0% |
+
+## Why questions failed (diagnosis)
+
+| diagnosis | meaning | questions | share | which |
+|---|---|---|---|---|
+| ok | answered correctly | 3 | 60% | Q1, Q2, Q3 |
+| partial | answer only partly correct | 1 | 20% | Q4 |
+| correct_refusal | correctly refused an unanswerable question | 1 | 20% | Q47 |
+
+### The failed questions
+
+| Q | diagnosis | question | answer given |
+|---|---|---|---|
+| Q4 | partial | Along which dimensions does the survey compare the different retrie... | The survey compares retrieval fusions along the following... |
+
+## Cost and speed
+
+Latency p50 4106 ms, p95 7386 ms (mean 4928 ms). Average 1713 tokens and 1.0 LLM calls per question; the judge made 2 extra LLM calls.
+
+## Caveats
+
+- No question in the dataset has been reviewed by a human yet, so the ground truth itself is unchecked.
+- Only 4 answerable questions: look at the confidence intervals, a difference of a few points between two runs is noise.
+- Judge verdicts are opinions of an LLM. Calibrate the judge against hand labels (`make_label_sheet`, `calibrate`) before trusting small differences.

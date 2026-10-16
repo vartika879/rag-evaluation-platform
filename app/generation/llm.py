@@ -1,72 +1,218 @@
-
 import logging
+import os
 import re
+import threading
 import time
 from functools import lru_cache
- 
+
+from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
- 
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 from app.config import (
+    JUDGE_PROVIDER,
+    JUDGE_MODEL,
     LLM_MODEL,
     LLM_TEMPERATURE,
     REFUSAL_MESSAGE,
     get_api_key,
 )
- 
+
 logger = logging.getLogger(__name__)
- 
+
 MAX_RETRIES = 3
- 
- 
+
+GROQ_BASE_URL = "https://api.groq.com",
+DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
 # ---------------------------------------------------------------------------
-# LLM client
+# Multi-key rotation for Groq (works best with keys from DIFFERENT accounts)
 # ---------------------------------------------------------------------------
- 
-@lru_cache(maxsize=4)
+
+def _load_groq_keys():
+    keys = [
+        k.strip() for k in [
+            os.getenv("GROQ_API_KEY"),
+            os.getenv("GROQ_API_KEY_2"),
+            os.getenv("GROQ_API_KEY_3"),
+        ] if k and k.strip()
+    ]
+    if not keys:
+        keys = [get_api_key("GROQ_API_KEY")]
+    return keys
+
+
+_GROQ_KEYS = _load_groq_keys()
+_key_lock = threading.Lock()
+_current_idx = 0
+
+if len(_GROQ_KEYS) > 1:
+    logger.info("Loaded %d Groq keys (rotation enabled)", len(_GROQ_KEYS))
+
+
+def _get_current_key():
+    with _key_lock:
+        return _GROQ_KEYS[_current_idx]
+
+
+def _rotate_key():
+    """Switch to next key. Returns True if rotated, False if only 1 key."""
+    global _current_idx
+    if len(_GROQ_KEYS) <= 1:
+        return False
+    with _key_lock:
+        _current_idx = (_current_idx + 1) % len(_GROQ_KEYS)
+        logger.warning("Rotated to Groq key #%d/%d", _current_idx + 1, len(_GROQ_KEYS))
+    return True
+
+
+def _is_rate_limit(message):
+    m = message.lower()
+    return "429" in m or "rate limit" in m or "too many requests" in m
+
+# ---------------------------------------------------------------------------
+# LLM clients
+# ---------------------------------------------------------------------------
+
 def create_llm(model_name=None, temperature=None):
-    """Return a (cached) Groq chat model. Every module that calls
-    create_llm() with the same arguments now shares one client."""
+    """Return a Groq-compatible client. Uses the current key; retries with
+    other keys if rate-limited (see _invoke_with_retry)."""
     model_name = model_name or LLM_MODEL
     temperature = LLM_TEMPERATURE if temperature is None else temperature
- 
-    api_key = get_api_key("GROQ_API_KEY")
- 
-    logger.info("Initializing Groq LLM with model: %s", model_name)
- 
-    return ChatGroq(
+
+    api_key = _get_current_key()
+    logger.info(
+        "Initializing Groq-compatible LLM: %s (key #%d/%d)",
+        model_name, _current_idx + 1, len(_GROQ_KEYS),
+    )
+
+    return ChatOpenAI(
         model=model_name,
         temperature=temperature,
-        groq_api_key=api_key,
+        api_key=api_key,
+        base_url="https://api.groq.com/openai/v1",
+        timeout=30,
+        max_retries=0,
     )
- 
- 
+
+def create_judge_llm():
+    """Create a judge client using the configured provider."""
+    provider = JUDGE_PROVIDER.strip().lower()
+    model_name = JUDGE_MODEL
+    if provider == "groq":
+       return create_llm(JUDGE_MODEL, 0.0)
+
+
+    if provider == "deepseek":
+        api_key = get_api_key("DEEPSEEK_API_KEY")
+
+        return ChatOpenAI(
+            model=model_name,
+            temperature=0.0,
+            api_key=api_key,
+            base_url=DEEPSEEK_BASE_URL,
+            timeout=30,
+            max_retries=0,
+        )
+
+    if provider == "openrouter":
+        api_key = get_api_key("OPENROUTER_API_KEY")
+
+        return ChatOpenAI(
+            model=model_name,
+            temperature=0.0,
+            api_key=api_key,
+            base_url=OPENROUTER_BASE_URL,
+            timeout=30,
+            max_retries=0,
+        )
+
+    if provider == "gemini":
+        api_key = get_api_key("GEMINI_API_KEY")
+
+        return ChatGoogleGenerativeAI(
+            model=model_name,
+            temperature=0.0,
+            google_api_key=api_key,
+            max_retries=0,
+        )
+
+    raise ValueError(
+        f"Unsupported JUDGE_PROVIDER: {provider!r}. "
+        "Choose 'groq', 'gemini', 'deepseek', or 'openrouter'."
+    )
+
 def _invoke_with_retry(llm, prompt):
-    for attempt in range(1, MAX_RETRIES + 1):
+    """Retry 3x with same key; only then rotate to next key.
+    Each key gets 3 attempts before we give up.
+    
+    With 2 keys: 3 tries on key1 → 3 tries on key2 → raise.
+    """
+    attempts_per_key = 3
+    total_keys = max(1, len(_GROQ_KEYS))
+
+    # Total attempts = keys × attempts per key, but also cap on MAX_RETRIES
+    max_attempts = max(attempts_per_key, attempts_per_key * total_keys)
+
+    attempt = 0
+    key_attempt = 0
+    keys_used = 0
+
+    while attempt < max_attempts:
+        attempt += 1
+        key_attempt += 1
+
         try:
-            return llm.invoke(prompt)
+            response = llm.invoke(prompt)
+
+            if response is None or getattr(response, "content", None) is None:
+                raise RuntimeError("LLM returned None response")
+
+            return response
+
         except Exception as error:
             message = str(error).lower()
-            retryable = (
-                "429" in message
-                or "rate limit" in message
-                or "too many requests" in message
-                or "timeout" in message
+
+            retryable = any(
+                marker in message
+                for marker in (
+                    "429", "rate limit", "too many requests",
+                    "timeout", "timed out",
+                    "500", "502", "503", "504",
+                    "none response",
+                )
             )
- 
-            if not retryable or attempt == MAX_RETRIES:
+
+            if not retryable:
                 raise
- 
-            wait_seconds = 2 ** attempt
+
+            # Tried this key enough times? Rotate to next key.
+            if key_attempt >= attempts_per_key and keys_used < total_keys - 1:
+                if _rotate_key():
+                    keys_used += 1
+                    key_attempt = 0
+                    llm = create_llm(
+                        getattr(llm, "model_name", None) or getattr(llm, "model", None),
+                        getattr(llm, "temperature", 0.0),
+                    )
+                    logger.info(
+                        "Rotating to Groq key #%d/%d (after %d tries)",
+                        keys_used + 1, total_keys, attempts_per_key,
+                    )
+                    continue
+
+            # Last attempt overall? Raise.
+            if attempt >= max_attempts:
+                raise
+
+            # Otherwise wait and retry same key
+            wait_seconds = min(2 ** key_attempt, 8)
             logger.warning(
-                "LLM call failed (attempt %d/%d), retrying in %ds: %s",
-                attempt,
-                MAX_RETRIES,
-                wait_seconds,
-                error,
+                "LLM call failed (attempt %d, key-try %d/%d); retrying in %ds: %s",
+                attempt, key_attempt, attempts_per_key, wait_seconds, message[:120],
             )
             time.sleep(wait_seconds)
- 
- 
 # ---------------------------------------------------------------------------
 # Prompt
 # ---------------------------------------------------------------------------

@@ -165,7 +165,7 @@ def assign_ranks(chunks: List[RetrievedChunk], stage: str) -> List[RetrievedChun
 # API models (used by app/api.py)
 # ---------------------------------------------------------------------------
 class AskRequest(BaseModel):
-    question: str = Field(..., min_length=1)
+    question: str = Field(..., min_length=1, max_length=1000)
     top_k: Optional[int] = Field(default=None, ge=1, le=50)
     preset: Optional[str] = Field(
         default=None,

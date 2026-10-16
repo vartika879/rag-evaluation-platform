@@ -71,14 +71,15 @@ EMBEDDING_DIM = _env_int("EMBEDDING_DIM", 1024)   # must match EMBEDDING_MODEL
 EMBEDDING_BATCH_SIZE = 96                         # Cohere limit per call
  
 RERANK_MODEL = _env_str("RERANK_MODEL", "rerank-v3.5")
- 
+
+
 LLM_MODEL = _env_str("GROQ_MODEL", "openai/gpt-oss-20b")
 LLM_TEMPERATURE = _env_float("LLM_TEMPERATURE", 0.0)
- 
-# LLM used as a judge in evaluation (defaults to the same model)
+
+# Judge provider is independent of the answer-generation provider.
+JUDGE_PROVIDER = _env_str("JUDGE_PROVIDER", "groq").strip().lower()
 JUDGE_MODEL = _env_str("JUDGE_MODEL", LLM_MODEL)
- 
- 
+
 # ---------------------------------------------------------------------------
 # Ingestion / chunking defaults
 # ---------------------------------------------------------------------------

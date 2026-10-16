@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from app.api import app
 import app.api as api_module
 
-client = TestClient(app)
+client = TestClient(app, headers={"X-API-Key": "test-api-token"})
 
 
 def test_health_endpoint():
@@ -14,7 +14,7 @@ def test_health_endpoint():
 
 
 def test_ask_returns_answer_and_sources(monkeypatch):
-    def fake_answer_question(question, top_k=None):
+    def fake_answer_question(question, top_k=None, *args, **kwargs):
         return {
             "question": question,
             "answer": "RAG combines retrieval and generation.",
@@ -58,7 +58,7 @@ def test_ask_rejects_invalid_top_k():
 
 
 def test_ask_refuses_when_no_documents_found(monkeypatch):
-    def fake_answer_question(question, top_k=None):
+    def fake_answer_question(question, top_k=None, *args, **kwargs):
         return {
             "question": question,
             "answer": "I don't have enough information in the provided documents.",
@@ -84,7 +84,7 @@ def test_ask_refuses_when_no_documents_found(monkeypatch):
 def test_ask_returns_llm_refusal(monkeypatch):
     refusal = "I don't have enough information in the provided documents."
 
-    def fake_answer_question(question, top_k=None):
+    def fake_answer_question(question, top_k=None, *args, **kwargs):
         return {
             "question": question,
             "answer": refusal,
@@ -109,3 +109,19 @@ def test_ask_returns_llm_refusal(monkeypatch):
 
 
 
+
+
+def test_dashboard_api_rejects_invalid_api_key():
+    response = client.get(
+        "/api/stats/overview",
+        headers={"X-API-Key": "wrong-token"},
+    )
+    assert response.status_code == 401
+
+
+def test_ask_rejects_oversized_question():
+    response = client.post(
+        "/ask",
+        json={"question": "x" * 1001},
+    )
+    assert response.status_code == 422

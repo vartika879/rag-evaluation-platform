@@ -1,14 +1,16 @@
 import logging
+import hmac
+import os
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, APIRouter
+from fastapi import FastAPI, HTTPException, APIRouter, Depends, Header
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import ensure_dirs, validate_env
 from app.schemas import AskRequest, AskResponse
 from app.services.rag_service import answer_question
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List as ListType
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +30,21 @@ app.add_middleware(
 )
 
 
+
+def require_api_key(x_api_key: Optional[str] = Header(default=None, alias="X-API-Key")):
+    """Require a configured shared secret for application endpoints.
+
+    /health remains public for hosting-platform health checks.
+    Set API_ACCESS_TOKEN in the API environment and RAG_API_TOKEN in the UI
+    environment to the same long, random value.
+    """
+    expected = os.getenv("API_ACCESS_TOKEN", "").strip()
+    if not expected:
+        raise HTTPException(503, "API authentication is not configured.")
+    if not x_api_key or not hmac.compare_digest(x_api_key, expected):
+        raise HTTPException(401, "Missing or invalid API key.")
+
+
 @app.on_event("startup")
 def _startup():
     validate_env()
@@ -43,7 +60,7 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/ask", response_model=AskResponse)
+@app.post("/ask", response_model=AskResponse, dependencies=[Depends(require_api_key)])
 async def ask_question(request: AskRequest):
     if not request.question.strip():
         raise HTTPException(status_code=422, detail="Question cannot be empty.")
@@ -80,7 +97,7 @@ async def ask_question(request: AskRequest):
 # /api/* — read-only data for the dashboard
 # ===========================================================================
 
-api = APIRouter(prefix="/api", tags=["dashboard"])
+api = APIRouter(prefix="/api", tags=["dashboard"], dependencies=[Depends(require_api_key)])
 
 
 @api.get("/stats/overview")
@@ -174,10 +191,10 @@ def get_run_detail(run_id: str):
         raise HTTPException(400, str(exc)) from exc
 
 class RetrieveRequest(BaseModel):
-    query: str
-    methods: ListType[str] = ["vector", "bm25", "hybrid"]
-    top_k: int = 5
-    collection_name: Optional[str] = None
+    query: str = Field(..., min_length=1, max_length=1000)
+    methods: ListType[str] = Field(default_factory=lambda: ["vector", "bm25", "hybrid"], max_length=3)
+    top_k: int = Field(default=5, ge=1, le=20)
+    collection_name: Optional[str] = Field(default=None, min_length=1, max_length=128)
 
 
 def _serialize_chunk(rank, c):
@@ -195,8 +212,8 @@ def _serialize_chunk(rank, c):
     }
 
 class ChunkingRequest(BaseModel):
-    num_pages: int = 10
-    strategies: ListType[str] = ["recursive", "fixed", "structure_aware"]
+    num_pages: int = Field(default=10, ge=1, le=30)
+    strategies: ListType[str] = Field(default_factory=lambda: ["recursive", "fixed", "structure_aware"], min_length=1, max_length=4)
 
 
 @api.post("/chunking/compare")
@@ -253,8 +270,8 @@ def api_chunking_compare(payload: ChunkingRequest):
     }
 
 class EvalRunRequest(BaseModel):
-    preset: str = "vector"
-    limit: Optional[int] = None
+    preset: str = Field(default="vector", min_length=1, max_length=64)
+    limit: Optional[int] = Field(default=None, ge=1, le=60)
     use_judge: bool = True
 
 
@@ -271,9 +288,9 @@ def api_run_evaluation(payload: EvalRunRequest):
         raise HTTPException(400, str(exc)) from exc
 
     dataset = load_dataset()
-    if payload.limit:
-        # Simple limit: take first N (keep proportion roughly)
-        dataset = dataset.filter(ids=[q.id for q in dataset][: payload.limit])
+    if payload.limit is not None:
+        # Limit the dataset deterministically for controlled, smaller runs.
+        dataset = dataset.filter(ids=[q.id for q in dataset][:payload.limit])
 
     try:
         run = run_evaluation(
@@ -309,9 +326,9 @@ def api_run_evaluation(payload: EvalRunRequest):
     
 
 class IngestRequest(BaseModel):
-    strategy: str = "recursive"
-    chunk_size: int = 1000
-    chunk_overlap: int = 150
+    strategy: str = Field(default="recursive", min_length=1, max_length=32)
+    chunk_size: int = Field(default=1000, ge=100, le=3000)
+    chunk_overlap: int = Field(default=150, ge=0, le=500)
     recreate: bool = False
 
 
