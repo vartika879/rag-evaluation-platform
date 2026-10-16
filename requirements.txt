@@ -15,7 +15,8 @@ langchain-text-splitters
 langchain-groq
 langchain-cohere
 langchain-experimental
-
+langchain-openai
+langchain-google-genai
 # ================================
 # PDF / Document Processing
 # ================================
