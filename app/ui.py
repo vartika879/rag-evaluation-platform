@@ -42,6 +42,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+
 # ---------------------------------------------------------------------------
 # Custom CSS
 # ---------------------------------------------------------------------------
@@ -60,8 +61,21 @@ st.markdown("""
     }
 
     /* Hide default Streamlit header/footer */
-    #MainMenu, footer, header {visibility: hidden;}
+        /* Hide default Streamlit menu/footer, but keep header functional
+       (it holds the sidebar toggle arrow) */
+    #MainMenu, footer {visibility: hidden;}
 
+    [data-testid="stHeader"] {
+        background: transparent !important;
+    }
+
+    /* Force sidebar toggle arrow visible */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
     /* ---------- Sidebar ---------- */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1F2937 0%, #111827 100%);
