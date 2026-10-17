@@ -2,7 +2,7 @@
 
 A **RAG evaluation and debugging system** that helps developers understand *why* a retrieval-augmented generation pipeline succeeds or fails, using data instead of guesswork.
 
-**🌐 Live Demo:** [rag-evaluation-platform.streamlit.app](https://rag-evaluation-platform-jyjremkrn8wlna6zqxayys.streamlit.app)  
+**🌐 Live Demo:** https://rag-evaluation-platform-jvjremkrn8wlna6zqxayys.streamlit.app/
 **🔌 API Docs:** [rag-evaluation-platform.onrender.com/docs](https://rag-evaluation-platform.onrender.com/docs)
 
 ---
@@ -152,7 +152,6 @@ Every failed question is auto-labeled with one of:
 
 ```bash
 git clone https://github.com/vartika879/rag-evaluation-platform.git
-cd rag-evaluation-platform
 python -m venv .venv
 .venv\Scripts\activate    # Windows (Linux/macOS: source .venv/bin/activate)
 pip install -r requirements.txt
