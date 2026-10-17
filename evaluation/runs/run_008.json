@@ -1,10 +1,10 @@
 {
   "format_version": 1,
-  "run_id": "run_031",
+  "run_id": "run_008",
   "status": "running",
-  "created_at": "2026-10-16T04:30:53+00:00",
+  "created_at": "2026-10-15T20:02:23+00:00",
   "finished_at": null,
-  "label": "hybrid_rerank",
+  "label": "hybrid-rrf+rerank",
   "config": {
     "collection_name": null,
     "doc_id": null,
@@ -33,7 +33,7 @@
   "dataset": {
     "source": "rag_survey.pdf",
     "doc_id": "e1f208bba353",
-    "n": 20,
+    "n": 60,
     "ids": [
       1,
       2,
@@ -50,11 +50,51 @@
       13,
       14,
       15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
       47,
       48,
       49,
       50,
-      51
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60
     ],
     "reviewed": 0
   },
@@ -73,8 +113,8 @@
     ],
     "match_threshold": 0.8,
     "low_rank": 3,
-    "judge": false,
-    "judge_model": null,
+    "judge": true,
+    "judge_model": "openai/gpt-oss-20b",
     "retrieval_depth": 10
   },
   "rows": [
@@ -86,13 +126,13 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "cb648591e411",
+      "trace_id": "5cf8a0911d8b",
       "action": "answered",
       "refused": false,
-      "answer": "The survey states that RAG helps mitigate the following key issues of large language models:  \n- Hallucination problems  \n- Knowledge‑update issues  \n- Lack of domain‑specific expertise",
+      "answer": "The survey states that RAG helps mitigate the following key problems of large language models:\n\n- Hallucination problems  \n- Knowledge‑update issues  \n- Lack of domain‑specific expertise",
       "error": null,
-      "latency_ms": 7770,
-      "tokens": 1714,
+      "latency_ms": 5357,
+      "tokens": 1746,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 1,
@@ -159,9 +199,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All three claims are directly stated in the abstract.",
+          "passed": true,
+          "claims": 3,
+          "supported": 3,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer lists all three problems exactly as in the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 2,
@@ -171,12 +232,12 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "4c294269952c",
+      "trace_id": "1a3cd00d00a8",
       "action": "answered",
       "refused": false,
       "answer": "The survey’s taxonomy lists four retrieval‑fusion categories:\n\n1. Query‑based fusion  \n2. Logits‑based fusion  \n3. Latent fusion  \n4. Parametric fusion",
       "error": null,
-      "latency_ms": 3615,
+      "latency_ms": 2678,
       "tokens": 1418,
       "llm_calls": 1,
       "retrieval": {
@@ -244,9 +305,30 @@
         "precision@10": 0.1,
         "ndcg@10": 0.38685280723454163
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All four categories are explicitly listed in the context.",
+          "passed": true,
+          "claims": 4,
+          "supported": 4,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer lists all four categories exactly as in the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 3,
@@ -254,12 +336,12 @@
       "type": "single_hop",
       "tags": [],
       "expected": "answerable",
-      "trace_id": "cb419218c6bf",
+      "trace_id": "799d4da37c74",
       "action": "answered",
       "refused": false,
       "answer": "Updating knowledge inside an LLM is expensive because it requires retraining or fine‑tuning the model with new data, a costly process.",
       "error": null,
-      "latency_ms": 4146,
+      "latency_ms": 2488,
       "tokens": 1585,
       "llm_calls": 1,
       "retrieval": {
@@ -327,9 +409,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "None",
+          "passed": true,
+          "claims": 2,
+          "supported": 2,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "It states the same key facts—retraining/fine‑tuning on new data is costly.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 4,
@@ -339,13 +442,13 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "279367e800fd",
+      "trace_id": "a7aa2fe49c0a",
       "action": "answered",
       "refused": false,
       "answer": "The survey compares retrieval fusions along the following dimensions: accessibility, memory footprint, latency, implementation complexity, and typical application scenarios.",
       "error": null,
-      "latency_ms": 3940,
-      "tokens": 1667,
+      "latency_ms": 3008,
+      "tokens": 1602,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 4,
@@ -412,9 +515,30 @@
         "precision@10": 0.1,
         "ndcg@10": 0.6309297535714575
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All five dimensions are explicitly mentioned in the context.",
+          "passed": true,
+          "claims": 5,
+          "supported": 5,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "It includes all key dimensions from the reference and adds no contradictory information.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 5,
@@ -424,12 +548,12 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "329d49808c96",
+      "trace_id": "c4f2100ea778",
       "action": "answered",
       "refused": false,
       "answer": "The typical RAG system consists of three modules: the **retriever**, the **retrieval fusion**, and the **generator**.",
       "error": null,
-      "latency_ms": 3726,
+      "latency_ms": 2773,
       "tokens": 1602,
       "llm_calls": 1,
       "retrieval": {
@@ -497,9 +621,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "The claim that a typical RAG system consists of the retriever, retrieval fusion, and generator is directly supported by the context.",
+          "passed": true,
+          "claims": 1,
+          "supported": 1,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "It lists the same three modules—retriever, retrieval fusion, and generator—as the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 6,
@@ -510,13 +655,13 @@
         "spans_pages"
       ],
       "expected": "answerable",
-      "trace_id": "2e6bded2efe3",
+      "trace_id": "e8b2d9c2f36d",
       "action": "answered",
       "refused": false,
-      "answer": "The retriever module is made up of three components:\n\n1. An encoder that converts inputs into embeddings.  \n2. An efficient indexing system (approximate nearest‑neighbor search).  \n3. A vector database that stores the external knowledge as key‑value pairs.",
+      "answer": "The retriever module is made up of three parts:\n\n1. An encoder that turns inputs into embeddings.  \n2. An efficient indexing component that supports approximate nearest‑neighbor search.  \n3. A vector database that stores the external knowledge as key‑value pairs.",
       "error": null,
-      "latency_ms": 4228,
-      "tokens": 1673,
+      "latency_ms": 2908,
+      "tokens": 1716,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 6,
@@ -585,9 +730,30 @@
         "precision@10": 0.2,
         "ndcg@10": 0.8503449055347546
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All three claims are directly supported by the context.",
+          "passed": true,
+          "claims": 3,
+          "supported": 3,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer lists the encoder, efficient ANN index, and vector database, matching the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 2
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 7,
@@ -597,13 +763,13 @@
         "project_relevant"
       ],
       "expected": "answerable",
-      "trace_id": "2f0912f7e000",
+      "trace_id": "502183f889fa",
       "action": "answered",
       "refused": false,
-      "answer": "The main difficulty in building the retriever module is finding the optimal trade‑off between retrieval efficiency (speed, encoding, indexing) and retrieval quality (relevance of the retrieved information).",
+      "answer": "The main difficulty in building the retriever module is finding the optimal trade‑off between retrieval efficiency (speed, encoding acceleration, indexing, etc.) and retrieval quality (relevance of the retrieved information).",
       "error": null,
-      "latency_ms": 4147,
-      "tokens": 1224,
+      "latency_ms": 8664,
+      "tokens": 1208,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 7,
@@ -670,9 +836,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "The claim is directly supported by Source 1.",
+          "passed": true,
+          "claims": 1,
+          "supported": 1,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer accurately states the key difficulty of balancing retrieval efficiency and quality.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 8,
@@ -682,12 +869,12 @@
         "definition"
       ],
       "expected": "answerable",
-      "trace_id": "24339571a80f",
+      "trace_id": "936fdb2b50b1",
       "action": "answered",
       "refused": false,
       "answer": "Query‑based fusion augments the input query with retrieved information—typically by concatenating the retrieved text or features into the prompt—before it is fed to the language model to generate a response.",
       "error": null,
-      "latency_ms": 4218,
+      "latency_ms": 10141,
       "tokens": 1344,
       "llm_calls": 1,
       "retrieval": {
@@ -755,9 +942,30 @@
         "precision@10": 0.1,
         "ndcg@10": 0.5
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All claims are supported by the context.",
+          "passed": true,
+          "claims": 3,
+          "supported": 3,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer accurately states that query‑based fusion augments the input with retrieved information before feeding it to the generator.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 2
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 9,
@@ -767,13 +975,13 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "cb0d6e63cdb9",
+      "trace_id": "325385154851",
       "action": "answered",
       "refused": false,
-      "answer": "The generators in RAG systems are grouped into three categories:\n\n1. Proprietary LLMs (e.g., GPT, Gemini).  \n2. Open‑weight pretrained LLMs (e.g., Mistral, Qwen, DeepSeek, Llama).  \n3. Retrieval‑aware generators (e.g., RETRO, Enc‑Dec).",
+      "answer": "The generators in RAG systems are grouped into three categories:\n\n1. Proprietary LLMs (e.g., GPT, Gemini)  \n2. Open‑weight pretrained LLMs (e.g., Mistral, Qwen, DeepSeek, Llama)  \n3. Retrieval‑aware generators (e.g., RETRO, Enc‑Dec)",
       "error": null,
-      "latency_ms": 8499,
-      "tokens": 1631,
+      "latency_ms": 11308,
+      "tokens": 1616,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 9,
@@ -840,9 +1048,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All three categories are explicitly mentioned in the context.",
+          "passed": true,
+          "claims": 3,
+          "supported": 3,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer lists all three categories exactly as in the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 2
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     },
     {
       "question_id": 10,
@@ -852,14 +1081,14 @@
         "project_relevant"
       ],
       "expected": "answerable",
-      "trace_id": "62757ed1a64a",
-      "action": "error",
+      "trace_id": "48d20f91579c",
+      "action": "answered",
       "refused": false,
-      "answer": "",
-      "error": "OpenAIRateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kyqk7seves3v10nzacnpxt31` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199715, Requested 1634. Please try again in 9m42.768s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 34882,
-      "tokens": 0,
-      "llm_calls": 0,
+      "answer": "The main challenge of chunking is determining the optimal chunk size. It involves a trade‑off between preserving text semantics and achieving encoding efficiency.",
+      "error": null,
+      "latency_ms": 12956,
+      "tokens": 1323,
+      "llm_calls": 1,
       "retrieval": {
         "question_id": 10,
         "type": "single_hop",
@@ -925,9 +1154,30 @@
         "precision@10": 0.1,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All claims are directly supported by the context.",
+          "passed": true,
+          "claims": 2,
+          "supported": 2,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "It states the same key facts—finding the best chunk size and the trade‑off between semantics and encoding efficiency.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "provider_rate_limit"
+      "diagnosis": "ok"
     },
     {
       "question_id": 11,
@@ -939,13 +1189,13 @@
         "project_relevant"
       ],
       "expected": "answerable",
-      "trace_id": "936bbc0a2770",
+      "trace_id": "b71cbc081523",
       "action": "answered",
       "refused": false,
-      "answer": "When deciding on a chunk size, you should consider:\n\n1. **Task’s preference** – Different tasks need different granularity.  \n   * Question‑answering usually works with short chunks (≈128 tokens).  \n   * Summarization often requires longer chunks (≈512 tokens).\n\n2. **Encoder’s preference** – The model’s maximum input length and its performance on short vs. long texts.  \n   * Sentence‑transformer models perform best on single sentences.  \n   * Models like text‑embedding‑ada‑002 handle longer texts better.  \n   * The chunk size is usually limited by the encoder’s max sequence length (e.g., 512 tokens for BERT‑based models).\n\n3. **Query’s preference** – The length of user queries should match the chunk size so that the amount of context in chunks aligns with that in queries; otherwise retrieval relevance can suffer.\n\nThese three factors—task, encoder, and query—guide the choice of chunk size, and there is no single “golden rule” that applies to all RAG scenarios.",
+      "answer": "When deciding on a chunk size, consider:\n\n1. **Task’s preference** – the granularity needed for the downstream task (e.g., QA prefers short chunks ~128 tokens; summarization prefers longer chunks ~512 tokens).  \n2. **Encoder’s preference** – the maximum input length and performance of the embedding model (e.g., sentence‑transformer works best on single sentences, text‑embedding‑ada‑002 handles longer texts, BERT‑based models typically cap at 512 tokens).  \n3. **Query’s preference** – the length of user queries should align with the chunk size so that the amount of context in chunks matches that in queries (short‑phrase databases may not serve long‑document queries).  \n\nThese three factors together guide the choice of chunk size for a given RAG scenario.",
       "error": null,
-      "latency_ms": 5793,
-      "tokens": 2150,
+      "latency_ms": 11857,
+      "tokens": 2096,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 11,
@@ -1016,183 +1266,30 @@
         "precision@10": 0.3,
         "ndcg@10": 1.0
       },
-      "judge": null,
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All 10 factual claims are directly supported by the context.",
+          "passed": true,
+          "claims": 10,
+          "supported": 10,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "CORRECT",
+          "score": 1.0,
+          "reason": "The answer lists all three factors—task, encoder, and query preferences—exactly as in the reference.",
+          "passed": true,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
       "judge_error": null,
-      "diagnosis": "unjudged"
-    },
-    {
-      "question_id": 12,
-      "question": "What chunk sizes does the survey suggest for question answering and for summarization?",
-      "type": "single_hop",
-      "tags": [
-        "numeric",
-        "project_relevant"
-      ],
-      "expected": "answerable",
-      "trace_id": "91bce907104a",
-      "action": "answered",
-      "refused": false,
-      "answer": "The survey recommends a chunk size of **128 tokens for question‑answering tasks** and **512 tokens for summarization tasks**.",
-      "error": null,
-      "latency_ms": 4900,
-      "tokens": 1686,
-      "llm_calls": 1,
-      "retrieval": {
-        "question_id": 12,
-        "type": "single_hop",
-        "n_groups": 2,
-        "returned": 20,
-        "group_ranks": {
-          "1": 1,
-          "2": 1
-        },
-        "first_relevant_rank": 1,
-        "last_group_rank": 1,
-        "mrr": 1.0,
-        "hit@1": 1.0,
-        "recall@1": 1.0,
-        "all_groups@1": 1.0,
-        "precision@1": 1.0,
-        "ndcg@1": 1.0,
-        "hit@3": 1.0,
-        "recall@3": 1.0,
-        "all_groups@3": 1.0,
-        "precision@3": 0.3333333333333333,
-        "ndcg@3": 1.0,
-        "hit@5": 1.0,
-        "recall@5": 1.0,
-        "all_groups@5": 1.0,
-        "precision@5": 0.2,
-        "ndcg@5": 1.0,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.1,
-        "ndcg@10": 1.0
-      },
-      "retrieval_unavailable": false,
-      "context": {
-        "question_id": 12,
-        "type": "single_hop",
-        "n_groups": 2,
-        "returned": 5,
-        "group_ranks": {
-          "1": 1,
-          "2": 1
-        },
-        "first_relevant_rank": 1,
-        "last_group_rank": 1,
-        "mrr": 1.0,
-        "hit@1": 1.0,
-        "recall@1": 1.0,
-        "all_groups@1": 1.0,
-        "precision@1": 1.0,
-        "ndcg@1": 1.0,
-        "hit@3": 1.0,
-        "recall@3": 1.0,
-        "all_groups@3": 1.0,
-        "precision@3": 0.3333333333333333,
-        "ndcg@3": 1.0,
-        "hit@5": 1.0,
-        "recall@5": 1.0,
-        "all_groups@5": 1.0,
-        "precision@5": 0.2,
-        "ndcg@5": 1.0,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.1,
-        "ndcg@10": 1.0
-      },
-      "judge": null,
-      "judge_error": null,
-      "diagnosis": "unjudged"
-    },
-    {
-      "question_id": 13,
-      "question": "What types of chunking techniques exist?",
-      "type": "single_hop",
-      "tags": [
-        "list",
-        "project_relevant"
-      ],
-      "expected": "answerable",
-      "trace_id": "4b5462156c51",
-      "action": "answered",
-      "refused": false,
-      "answer": "The survey identifies three main chunking techniques:\n\n1. **Fixed‑length chunking** – splits documents sequentially using a length hyper‑parameter.  \n2. **Semantic chunking** – cuts documents based on semantic cues such as periods or newlines that mark sentence ends.  \n3. **Content‑based chunking** – segments documents according to structural features (e.g., sections in medical records, function blocks in code).",
-      "error": null,
-      "latency_ms": 3003,
-      "tokens": 1819,
-      "llm_calls": 1,
-      "retrieval": {
-        "question_id": 13,
-        "type": "single_hop",
-        "n_groups": 1,
-        "returned": 20,
-        "group_ranks": {
-          "1": 2
-        },
-        "first_relevant_rank": 2,
-        "last_group_rank": 2,
-        "mrr": 0.5,
-        "hit@1": 0.0,
-        "recall@1": 0.0,
-        "all_groups@1": 0.0,
-        "precision@1": 0.0,
-        "ndcg@1": 0.0,
-        "hit@3": 1.0,
-        "recall@3": 1.0,
-        "all_groups@3": 1.0,
-        "precision@3": 0.3333333333333333,
-        "ndcg@3": 0.6309297535714575,
-        "hit@5": 1.0,
-        "recall@5": 1.0,
-        "all_groups@5": 1.0,
-        "precision@5": 0.2,
-        "ndcg@5": 0.6309297535714575,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.1,
-        "ndcg@10": 0.6309297535714575
-      },
-      "retrieval_unavailable": false,
-      "context": {
-        "question_id": 13,
-        "type": "single_hop",
-        "n_groups": 1,
-        "returned": 5,
-        "group_ranks": {
-          "1": 1
-        },
-        "first_relevant_rank": 1,
-        "last_group_rank": 1,
-        "mrr": 1.0,
-        "hit@1": 1.0,
-        "recall@1": 1.0,
-        "all_groups@1": 1.0,
-        "precision@1": 1.0,
-        "ndcg@1": 1.0,
-        "hit@3": 1.0,
-        "recall@3": 1.0,
-        "all_groups@3": 1.0,
-        "precision@3": 0.3333333333333333,
-        "ndcg@3": 1.0,
-        "hit@5": 1.0,
-        "recall@5": 1.0,
-        "all_groups@5": 1.0,
-        "precision@5": 0.2,
-        "ndcg@5": 1.0,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.1,
-        "ndcg@10": 1.0
-      },
-      "judge": null,
-      "judge_error": null,
-      "diagnosis": "unjudged"
+      "diagnosis": "ok"
     }
   ],
   "summary": null

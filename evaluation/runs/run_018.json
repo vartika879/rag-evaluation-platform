@@ -1,10 +1,10 @@
 {
   "format_version": 1,
-  "run_id": "judge_smoke_001",
+  "run_id": "run_018",
   "status": "complete",
-  "created_at": "2026-10-16T03:44:35+00:00",
-  "finished_at": "2026-10-16T03:45:02+00:00",
-  "label": "hybrid-rrf+rerank",
+  "created_at": "2026-10-16T04:33:54+00:00",
+  "finished_at": "2026-10-16T04:34:25+00:00",
+  "label": "hybrid_rerank",
   "config": {
     "collection_name": null,
     "doc_id": null,
@@ -33,11 +33,13 @@
   "dataset": {
     "source": "rag_survey.pdf",
     "doc_id": "e1f208bba353",
-    "n": 3,
+    "n": 5,
     "ids": [
       1,
       2,
-      3
+      3,
+      4,
+      47
     ],
     "reviewed": 0
   },
@@ -69,13 +71,13 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "41c8f72583ae",
+      "trace_id": "9cf9cd21ddde",
       "action": "answered",
       "refused": false,
-      "answer": "The survey states that RAG helps mitigate the following key issues of large language models:  \n- Hallucination problems  \n- Knowledge‑update issues  \n- Lack of domain‑specific expertise",
+      "answer": "The survey states that RAG helps mitigate the following key problems of large language models:\n\n- Hallucination problems  \n- Knowledge‑update issues  \n- Lack of domain‑specific expertise",
       "error": null,
-      "latency_ms": 8725,
-      "tokens": 1714,
+      "latency_ms": 7386,
+      "tokens": 1746,
       "llm_calls": 1,
       "retrieval": {
         "question_id": 1,
@@ -149,7 +151,7 @@
         "faithfulness": {
           "verdict": "FAITHFUL",
           "score": 1.0,
-          "reason": "All three claims are directly supported by the abstract in Source 1.",
+          "reason": "All three listed problems are explicitly mentioned in the survey as issues mitigated by RAG.",
           "passed": true,
           "claims": 3,
           "supported": 3,
@@ -158,7 +160,7 @@
         "correctness": {
           "verdict": "CORRECT",
           "score": 1.0,
-          "reason": "The answer lists exactly the three problems mentioned in the reference without contradiction.",
+          "reason": "The answer includes all three key problems from the reference with no contradictions.",
           "passed": true,
           "fallback_reason": null
         },
@@ -175,12 +177,12 @@
         "list"
       ],
       "expected": "answerable",
-      "trace_id": "668055c0257f",
+      "trace_id": "2cc2f373afe3",
       "action": "answered",
       "refused": false,
       "answer": "The survey’s taxonomy lists four retrieval‑fusion categories:\n\n1. Query‑based fusion  \n2. Logits‑based fusion  \n3. Latent fusion  \n4. Parametric fusion",
       "error": null,
-      "latency_ms": 5465,
+      "latency_ms": 5879,
       "tokens": 1418,
       "llm_calls": 1,
       "retrieval": {
@@ -189,11 +191,11 @@
         "n_groups": 1,
         "returned": 20,
         "group_ranks": {
-          "1": 6
+          "1": 5
         },
-        "first_relevant_rank": 6,
-        "last_group_rank": 6,
-        "mrr": 0.16666666666666666,
+        "first_relevant_rank": 5,
+        "last_group_rank": 5,
+        "mrr": 0.2,
         "hit@1": 0.0,
         "recall@1": 0.0,
         "all_groups@1": 0.0,
@@ -204,16 +206,16 @@
         "all_groups@3": 0.0,
         "precision@3": 0.0,
         "ndcg@3": 0.0,
-        "hit@5": 0.0,
-        "recall@5": 0.0,
-        "all_groups@5": 0.0,
-        "precision@5": 0.0,
-        "ndcg@5": 0.0,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "all_groups@5": 1.0,
+        "precision@5": 0.2,
+        "ndcg@5": 0.38685280723454163,
         "hit@10": 1.0,
         "recall@10": 1.0,
         "all_groups@10": 1.0,
         "precision@10": 0.2,
-        "ndcg@10": 0.3562071871080222
+        "ndcg@10": 0.38685280723454163
       },
       "retrieval_unavailable": false,
       "context": {
@@ -268,7 +270,7 @@
           "passed": true,
           "fallback_reason": null
         },
-        "llm_calls": 2
+        "llm_calls": 0
       },
       "judge_error": null,
       "diagnosis": "ok"
@@ -279,12 +281,12 @@
       "type": "single_hop",
       "tags": [],
       "expected": "answerable",
-      "trace_id": "51e7360367ef",
+      "trace_id": "7fbcf6445a1c",
       "action": "answered",
       "refused": false,
       "answer": "Updating knowledge inside an LLM is expensive because it requires retraining or fine‑tuning the model with new data, a costly process.",
       "error": null,
-      "latency_ms": 4610,
+      "latency_ms": 3233,
       "tokens": 1585,
       "llm_calls": 1,
       "retrieval": {
@@ -372,79 +374,190 @@
           "passed": true,
           "fallback_reason": null
         },
-        "llm_calls": 2
+        "llm_calls": 0
       },
       "judge_error": null,
       "diagnosis": "ok"
+    },
+    {
+      "question_id": 4,
+      "question": "Along which dimensions does the survey compare the different retrieval fusions?",
+      "type": "single_hop",
+      "tags": [
+        "list"
+      ],
+      "expected": "answerable",
+      "trace_id": "b4c090b438ca",
+      "action": "answered",
+      "refused": false,
+      "answer": "The survey compares retrieval fusions along the following dimensions: accessibility, memory footprint, latency, implementation complexity, and typical application scenarios.",
+      "error": null,
+      "latency_ms": 4106,
+      "tokens": 1667,
+      "llm_calls": 1,
+      "retrieval": {
+        "question_id": 4,
+        "type": "single_hop",
+        "n_groups": 1,
+        "returned": 20,
+        "group_ranks": {
+          "1": 18
+        },
+        "first_relevant_rank": 18,
+        "last_group_rank": 18,
+        "mrr": 0.05555555555555555,
+        "hit@1": 0.0,
+        "recall@1": 0.0,
+        "all_groups@1": 0.0,
+        "precision@1": 0.0,
+        "ndcg@1": 0.0,
+        "hit@3": 0.0,
+        "recall@3": 0.0,
+        "all_groups@3": 0.0,
+        "precision@3": 0.0,
+        "ndcg@3": 0.0,
+        "hit@5": 0.0,
+        "recall@5": 0.0,
+        "all_groups@5": 0.0,
+        "precision@5": 0.0,
+        "ndcg@5": 0.0,
+        "hit@10": 0.0,
+        "recall@10": 0.0,
+        "all_groups@10": 0.0,
+        "precision@10": 0.0,
+        "ndcg@10": 0.0
+      },
+      "retrieval_unavailable": false,
+      "context": {
+        "question_id": 4,
+        "type": "single_hop",
+        "n_groups": 1,
+        "returned": 5,
+        "group_ranks": {
+          "1": 2
+        },
+        "first_relevant_rank": 2,
+        "last_group_rank": 2,
+        "mrr": 0.5,
+        "hit@1": 0.0,
+        "recall@1": 0.0,
+        "all_groups@1": 0.0,
+        "precision@1": 0.0,
+        "ndcg@1": 0.0,
+        "hit@3": 1.0,
+        "recall@3": 1.0,
+        "all_groups@3": 1.0,
+        "precision@3": 0.3333333333333333,
+        "ndcg@3": 0.6309297535714575,
+        "hit@5": 1.0,
+        "recall@5": 1.0,
+        "all_groups@5": 1.0,
+        "precision@5": 0.2,
+        "ndcg@5": 0.6309297535714575,
+        "hit@10": 1.0,
+        "recall@10": 1.0,
+        "all_groups@10": 1.0,
+        "precision@10": 0.1,
+        "ndcg@10": 0.6309297535714575
+      },
+      "judge": {
+        "skipped": null,
+        "expected": "answerable",
+        "refused": false,
+        "faithfulness": {
+          "verdict": "FAITHFUL",
+          "score": 1.0,
+          "reason": "All listed dimensions are mentioned in the survey (accessibility, memory footprint, latency, implementation complexity, typical application scenarios).",
+          "passed": true,
+          "claims": 5,
+          "supported": 5,
+          "fallback_reason": null
+        },
+        "correctness": {
+          "verdict": "PARTIAL",
+          "score": 0.5,
+          "reason": "It includes most of the listed dimensions but omits “efficiency” and adds unrelated ones.",
+          "passed": false,
+          "fallback_reason": null
+        },
+        "llm_calls": 0
+      },
+      "judge_error": null,
+      "diagnosis": "partial"
+    },
+    {
+      "question_id": 47,
+      "question": "Who is the current Prime Minister of India?",
+      "type": "unanswerable",
+      "tags": [
+        "off_topic"
+      ],
+      "expected": "unanswerable",
+      "trace_id": "5fcadb517676",
+      "action": "refused_by_llm",
+      "refused": true,
+      "answer": "I don't have enough information in the provided documents.",
+      "error": null,
+      "latency_ms": 4038,
+      "tokens": 2149,
+      "llm_calls": 1,
+      "retrieval": null,
+      "retrieval_unavailable": false,
+      "context": null,
+      "judge": {
+        "skipped": null,
+        "expected": "unanswerable",
+        "refused": true,
+        "faithfulness": null,
+        "correctness": null,
+        "llm_calls": 0
+      },
+      "judge_error": null,
+      "diagnosis": "correct_refusal"
     }
   ],
   "summary": {
     "counts": {
-      "questions": 3,
-      "answerable": 3,
-      "unanswerable": 0,
+      "questions": 5,
+      "answerable": 4,
+      "unanswerable": 1,
       "pipeline_errors": 0,
       "provider_rate_limits": 0,
       "retrieval_unavailable": 0,
       "by_action": {
-        "answered": 3
+        "answered": 4,
+        "refused_by_llm": 1
       }
     },
     "retrieval": {
       "all": {
-        "n": 3,
-        "mrr": 0.7222222222222222,
-        "hit@1": 0.6666666666666666,
-        "recall@1": 0.6666666666666666,
-        "all_groups@1": 0.6666666666666666,
-        "precision@1": 0.6666666666666666,
-        "ndcg@1": 0.6666666666666666,
-        "hit@3": 0.6666666666666666,
-        "recall@3": 0.6666666666666666,
-        "all_groups@3": 0.6666666666666666,
-        "precision@3": 0.2222222222222222,
-        "ndcg@3": 0.6666666666666666,
-        "hit@5": 0.6666666666666666,
-        "recall@5": 0.6666666666666666,
-        "all_groups@5": 0.6666666666666666,
-        "precision@5": 0.13333333333333333,
-        "ndcg@5": 0.6666666666666666,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.13333333333333333,
-        "ndcg@10": 0.7854023957026741
+        "n": 4,
+        "mrr": 0.5638888888888889,
+        "hit@1": 0.5,
+        "recall@1": 0.5,
+        "all_groups@1": 0.5,
+        "precision@1": 0.5,
+        "ndcg@1": 0.5,
+        "hit@3": 0.5,
+        "recall@3": 0.5,
+        "all_groups@3": 0.5,
+        "precision@3": 0.16666666666666666,
+        "ndcg@3": 0.5,
+        "hit@5": 0.75,
+        "recall@5": 0.75,
+        "all_groups@5": 0.75,
+        "precision@5": 0.15000000000000002,
+        "ndcg@5": 0.5967132018086354,
+        "hit@10": 0.75,
+        "recall@10": 0.75,
+        "all_groups@10": 0.75,
+        "precision@10": 0.1,
+        "ndcg@10": 0.5967132018086354
       },
       "by_type": {
         "single_hop": {
-          "n": 3,
-          "mrr": 0.7222222222222222,
-          "hit@1": 0.6666666666666666,
-          "recall@1": 0.6666666666666666,
-          "all_groups@1": 0.6666666666666666,
-          "precision@1": 0.6666666666666666,
-          "ndcg@1": 0.6666666666666666,
-          "hit@3": 0.6666666666666666,
-          "recall@3": 0.6666666666666666,
-          "all_groups@3": 0.6666666666666666,
-          "precision@3": 0.2222222222222222,
-          "ndcg@3": 0.6666666666666666,
-          "hit@5": 0.6666666666666666,
-          "recall@5": 0.6666666666666666,
-          "all_groups@5": 0.6666666666666666,
-          "precision@5": 0.13333333333333333,
-          "ndcg@5": 0.6666666666666666,
-          "hit@10": 1.0,
-          "recall@10": 1.0,
-          "all_groups@10": 1.0,
-          "precision@10": 0.13333333333333333,
-          "ndcg@10": 0.7854023957026741
-        }
-      },
-      "by_tag": {
-        "list": {
-          "n": 2,
-          "mrr": 0.5833333333333334,
+          "n": 4,
+          "mrr": 0.5638888888888889,
           "hit@1": 0.5,
           "recall@1": 0.5,
           "all_groups@1": 0.5,
@@ -455,21 +568,47 @@
           "all_groups@3": 0.5,
           "precision@3": 0.16666666666666666,
           "ndcg@3": 0.5,
-          "hit@5": 0.5,
-          "recall@5": 0.5,
-          "all_groups@5": 0.5,
-          "precision@5": 0.1,
-          "ndcg@5": 0.5,
-          "hit@10": 1.0,
-          "recall@10": 1.0,
-          "all_groups@10": 1.0,
-          "precision@10": 0.15000000000000002,
-          "ndcg@10": 0.6781035935540111
+          "hit@5": 0.75,
+          "recall@5": 0.75,
+          "all_groups@5": 0.75,
+          "precision@5": 0.15000000000000002,
+          "ndcg@5": 0.5967132018086354,
+          "hit@10": 0.75,
+          "recall@10": 0.75,
+          "all_groups@10": 0.75,
+          "precision@10": 0.1,
+          "ndcg@10": 0.5967132018086354
+        }
+      },
+      "by_tag": {
+        "list": {
+          "n": 3,
+          "mrr": 0.4185185185185185,
+          "hit@1": 0.3333333333333333,
+          "recall@1": 0.3333333333333333,
+          "all_groups@1": 0.3333333333333333,
+          "precision@1": 0.3333333333333333,
+          "ndcg@1": 0.3333333333333333,
+          "hit@3": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "all_groups@3": 0.3333333333333333,
+          "precision@3": 0.1111111111111111,
+          "ndcg@3": 0.3333333333333333,
+          "hit@5": 0.6666666666666666,
+          "recall@5": 0.6666666666666666,
+          "all_groups@5": 0.6666666666666666,
+          "precision@5": 0.13333333333333333,
+          "ndcg@5": 0.46228426907818054,
+          "hit@10": 0.6666666666666666,
+          "recall@10": 0.6666666666666666,
+          "all_groups@10": 0.6666666666666666,
+          "precision@10": 0.10000000000000002,
+          "ndcg@10": 0.46228426907818054
         }
       },
       "outcomes": {
         "ok": 2,
-        "low_rank": 1,
+        "low_rank": 2,
         "partial": 0,
         "miss": 0
       },
@@ -477,88 +616,89 @@
         "miss": [],
         "partial": [],
         "low_rank": [
-          2
+          2,
+          4
         ]
       },
       "reachable": {
-        "n": 3,
-        "mrr": 0.7222222222222222,
-        "hit@1": 0.6666666666666666,
-        "recall@1": 0.6666666666666666,
-        "all_groups@1": 0.6666666666666666,
-        "precision@1": 0.6666666666666666,
-        "ndcg@1": 0.6666666666666666,
-        "hit@3": 0.6666666666666666,
-        "recall@3": 0.6666666666666666,
-        "all_groups@3": 0.6666666666666666,
-        "precision@3": 0.2222222222222222,
-        "ndcg@3": 0.6666666666666666,
-        "hit@5": 0.6666666666666666,
-        "recall@5": 0.6666666666666666,
-        "all_groups@5": 0.6666666666666666,
-        "precision@5": 0.13333333333333333,
-        "ndcg@5": 0.6666666666666666,
-        "hit@10": 1.0,
-        "recall@10": 1.0,
-        "all_groups@10": 1.0,
-        "precision@10": 0.13333333333333333,
-        "ndcg@10": 0.7854023957026741
+        "n": 4,
+        "mrr": 0.5638888888888889,
+        "hit@1": 0.5,
+        "recall@1": 0.5,
+        "all_groups@1": 0.5,
+        "precision@1": 0.5,
+        "ndcg@1": 0.5,
+        "hit@3": 0.5,
+        "recall@3": 0.5,
+        "all_groups@3": 0.5,
+        "precision@3": 0.16666666666666666,
+        "ndcg@3": 0.5,
+        "hit@5": 0.75,
+        "recall@5": 0.75,
+        "all_groups@5": 0.75,
+        "precision@5": 0.15000000000000002,
+        "ndcg@5": 0.5967132018086354,
+        "hit@10": 0.75,
+        "recall@10": 0.75,
+        "all_groups@10": 0.75,
+        "precision@10": 0.1,
+        "ndcg@10": 0.5967132018086354
       }
     },
     "context": {
       "all": {
-        "n": 3,
-        "mrr": 0.7333333333333334,
-        "hit@1": 0.6666666666666666,
-        "recall@1": 0.6666666666666666,
-        "all_groups@1": 0.6666666666666666,
-        "precision@1": 0.6666666666666666,
-        "ndcg@1": 0.6666666666666666,
-        "hit@3": 0.6666666666666666,
-        "recall@3": 0.6666666666666666,
-        "all_groups@3": 0.6666666666666666,
-        "precision@3": 0.2222222222222222,
-        "ndcg@3": 0.6666666666666666,
+        "n": 4,
+        "mrr": 0.675,
+        "hit@1": 0.5,
+        "recall@1": 0.5,
+        "all_groups@1": 0.5,
+        "precision@1": 0.5,
+        "ndcg@1": 0.5,
+        "hit@3": 0.75,
+        "recall@3": 0.75,
+        "all_groups@3": 0.75,
+        "precision@3": 0.25,
+        "ndcg@3": 0.6577324383928644,
         "hit@5": 1.0,
         "recall@5": 1.0,
         "all_groups@5": 1.0,
-        "precision@5": 0.20000000000000004,
-        "ndcg@5": 0.7956176024115139,
+        "precision@5": 0.2,
+        "ndcg@5": 0.7544456402014998,
         "hit@10": 1.0,
         "recall@10": 1.0,
         "all_groups@10": 1.0,
-        "precision@10": 0.10000000000000002,
-        "ndcg@10": 0.7956176024115139
+        "precision@10": 0.1,
+        "ndcg@10": 0.7544456402014998
       },
       "outcomes": {
-        "ok": 2,
+        "ok": 3,
         "low_rank": 1,
         "partial": 0,
         "miss": 0
       }
     },
     "answer": {
-      "n": 3,
+      "n": 5,
       "skipped": 0,
       "faithfulness_mean": 1.0,
       "faithfulness_pass_rate": 1.0,
       "faithfulness_unknown": 0,
-      "correctness_mean": 1.0,
-      "correct_rate": 1.0,
-      "partial_rate": 0.0,
+      "correctness_mean": 0.875,
+      "correct_rate": 0.75,
+      "partial_rate": 0.25,
       "incorrect_rate": 0.0,
       "correctness_unknown": 0,
       "refusal_unknown": 0,
-      "n_answerable": 3,
-      "n_unanswerable": 0,
-      "correct_refusal_rate": null,
-      "hallucination_rate": null,
+      "n_answerable": 4,
+      "n_unanswerable": 1,
+      "correct_refusal_rate": 1.0,
+      "hallucination_rate": 0.0,
       "false_refusal_rate": 0.0,
-      "judge_llm_calls": 6
+      "judge_llm_calls": 2
     },
     "end_to_end": {
-      "answerable_ok_rate": 1.0,
-      "unanswerable_ok_rate": null,
+      "answerable_ok_rate": 0.75,
+      "unanswerable_ok_rate": 1.0,
       "diagnosis": {
         "ok": {
           "count": 3,
@@ -569,8 +709,10 @@
           ]
         },
         "partial": {
-          "count": 0,
-          "ids": []
+          "count": 1,
+          "ids": [
+            4
+          ]
         },
         "false_refusal": {
           "count": 0,
@@ -589,8 +731,10 @@
           "ids": []
         },
         "correct_refusal": {
-          "count": 0,
-          "ids": []
+          "count": 1,
+          "ids": [
+            47
+          ]
         },
         "hallucination": {
           "count": 0,
@@ -611,100 +755,100 @@
       }
     },
     "refusal_flag": {
-      "n_answerable": 3,
-      "n_unanswerable": 0,
-      "correct_refusal_rate": null,
-      "hallucination_rate": null,
+      "n_answerable": 4,
+      "n_unanswerable": 1,
+      "correct_refusal_rate": 1.0,
+      "hallucination_rate": 0.0,
       "false_refusal_rate": 0.0
     },
     "efficiency": {
-      "n": 3,
-      "avg_latency_ms": 6267,
-      "p50_latency_ms": 5465,
-      "p95_latency_ms": 8725,
-      "avg_tokens": 1572,
+      "n": 5,
+      "avg_latency_ms": 4928,
+      "p50_latency_ms": 4106,
+      "p95_latency_ms": 7386,
+      "avg_tokens": 1713,
       "avg_llm_calls": 1.0,
       "errors": 0
     },
-    "judge_llm_calls": 6,
+    "judge_llm_calls": 2,
     "ci": {
       "retrieval.hit@1": {
-        "mean": 0.6666666666666666,
+        "mean": 0.5,
         "lo": 0.0,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.recall@1": {
-        "mean": 0.6666666666666666,
+        "mean": 0.5,
         "lo": 0.0,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.hit@3": {
-        "mean": 0.6666666666666666,
+        "mean": 0.5,
         "lo": 0.0,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.recall@3": {
-        "mean": 0.6666666666666666,
+        "mean": 0.5,
         "lo": 0.0,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.hit@5": {
-        "mean": 0.6666666666666666,
-        "lo": 0.0,
+        "mean": 0.75,
+        "lo": 0.25,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.recall@5": {
-        "mean": 0.6666666666666666,
-        "lo": 0.0,
+        "mean": 0.75,
+        "lo": 0.25,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.hit@10": {
-        "mean": 1.0,
-        "lo": 1.0,
+        "mean": 0.75,
+        "lo": 0.25,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.recall@10": {
-        "mean": 1.0,
-        "lo": 1.0,
+        "mean": 0.75,
+        "lo": 0.25,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "retrieval.mrr": {
-        "mean": 0.7222222222222222,
-        "lo": 0.16666666666666666,
+        "mean": 0.5638888888888889,
+        "lo": 0.12777777777777777,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "end_to_end.answerable_ok": {
-        "mean": 1.0,
-        "lo": 1.0,
+        "mean": 0.75,
+        "lo": 0.25,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       },
       "end_to_end.unanswerable_ok": {
-        "mean": null,
-        "lo": null,
-        "hi": null,
-        "n": 0
-      },
-      "answer.correctness": {
         "mean": 1.0,
         "lo": 1.0,
         "hi": 1.0,
-        "n": 3
+        "n": 1
+      },
+      "answer.correctness": {
+        "mean": 0.875,
+        "lo": 0.625,
+        "hi": 1.0,
+        "n": 4
       },
       "answer.faithfulness": {
         "mean": 1.0,
         "lo": 1.0,
         "hi": 1.0,
-        "n": 3
+        "n": 4
       }
     },
     "unreachable_ids": []
